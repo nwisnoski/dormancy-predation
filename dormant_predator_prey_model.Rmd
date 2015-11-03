@@ -9,6 +9,8 @@ output: pdf_document
 ```{r}
 # Clear environment
 rm(list=ls())
+setwd("~/GitHub/predation/")
+require("png")
 ```
 
 ### Initialize Parameters
@@ -16,20 +18,21 @@ rm(list=ls())
 R0 = 1
 A0 = 1
 D0 = 0
-P0 = 0
+P0 = .1
 
-timesteps = 100
+timesteps = 300
 
-Q = 10
-e.r = 0.8
-e.a = 0.4
-e.d = 0.01
-c = 0.6
-f = 0.5
-dorm = 0.2
-resus = 0.01
-m.a = 0.1
-m.p = 0.1
+Q = 1.5                      # resource delivery
+e.r = 0.6                    # efficiency of resource consumption
+e.a = 0.4                    # predator efficiency of consuming actives
+e.d = 0.001                  # predator efficiency of consuming dormants
+c = 0.7                      # rate of resource consumption by actives
+f = 0.7                      # feeding rate of predators on prey
+dorm = 0.3                   # max fraction of population to enter dormancy
+resus = 0.1                  # constant fraction of dormant pool to resuscitate
+m.a = 0.2                    # mortality rate of active individuals
+m.d = 0.01                   # mortality rate of dormant individuals
+m.p = 0.3                    # mortality rate of predators
 ```
 
 ### Create Matrices for Time Dynamics
@@ -41,7 +44,12 @@ time.dynamics[1, ] <- c(1, R0, A0, D0, P0)
 
 ### Iteration Function
 ```{r}
-iter <- function(in.matrix = "", timesteps = ""){
+iter <- function(in.matrix = "", timesteps = "", dormancy = ""){
+  if(dormancy == F){
+    dorm = 0
+    resus = 0
+  }
+  
   R <- in.matrix[1,2]
   A <- in.matrix[1,3]
   D <- in.matrix[1,4]
@@ -54,9 +62,9 @@ iter <- function(in.matrix = "", timesteps = ""){
     P <- in.matrix[i,5]
     
     dR = Q - c*R*A
-    dA = e.r*c*R*A - f*P*A - dorm*A + resus*D - m.a*A
-    dD = dorm*A - resus*D - f*P*D
-    dP = e.a*f*P + e.d*f*P*D - m.p*P
+    dA = e.r*c*R*A - f*P*A - dorm*A*exp(-R) + resus*D - m.a*A
+    dD = dorm*A - resus*D - f*P*D - m.d*D
+    dP = e.a*f*P*A + e.d*f*P*D - m.p*P
     
     in.matrix[i+1, 1] <- i
     in.matrix[i+1, 2] <- max((R + dR), 0)
@@ -70,8 +78,68 @@ iter <- function(in.matrix = "", timesteps = ""){
 
 ```
 
-### Simulate Model and Plot Dynamics
+### Define Plotting Function
 ```{r}
-out.dynamics <- iter(in.matrix = time.dynamics, timesteps = timesteps)
+plot.dynamics <- function(dynamics = ""){
+  plot(dynamics[,1], dynamics[,3], 
+       xlab = "", ylab = "Density", type = "l", lty = "solid", cex = 0.5)
 
-plot
+  points(dynamics[,1], dynamics[,4],
+       type = "l", lty = "dashed", cex = 0.5)
+
+  points(dynamics[,1], dynamics[,5],
+       type = "l", lty = "longdash", cex = 0.5, col = "red")
+
+  legend("topright", c("Active", "Dormant", "Predators"), 
+       lty = c("solid", "dashed", "longdash"), 
+       col = c("black", "black", "red"), cex = 0.4)
+}
+```
+
+# Run Simulation
+```{r}
+out.dynamics.D <- iter(in.matrix = time.dynamics, timesteps = timesteps, dormancy = T)
+
+out.dynamics.NoD <- iter(in.matrix = time.dynamics, timesteps = timesteps, dormancy = F)
+
+png("./figures/Figure1.png", 
+    width = 1200, height = 1200, res = 96*2)
+
+# Plot With Dormancy
+dorm.plot <- plot(out.dynamics.D[,1], out.dynamics.D[,3], ylim = c(0, 5),
+                  main = "Temporal Dynamics with Dormancy",
+       xlab = "", ylab = "Density", type = "l", lty = "solid", cex = 0.5)
+
+points(out.dynamics.D[,1], out.dynamics.D[,4],
+       type = "l", lty = "dashed", cex = 0.5)
+
+points(out.dynamics.D[,1], out.dynamics.D[,5],
+       type = "l", lty = "longdash", cex = 0.5, col = "red")
+
+legend("topright", c("Active", "Dormant", "Predators"), 
+       lty = c("solid", "dashed", "longdash"), 
+       col = c("black", "black", "red"), cex = 0.4)
+
+dev.off()
+
+png("./figures/Figure2.png",
+    width = 1200, height = 1200, res = 96*2)
+
+# Plot Without Dormancy
+no.dorm.plot <- plot(out.dynamics.NoD[,1], out.dynamics.NoD[,3], ylim = c(0,5),
+                     main = "Temporal Dynamics Without Dormancy",
+       xlab = "", ylab = "Density", type = "l", lty = "solid", cex = 0.5)
+
+points(out.dynamics.NoD[,1], out.dynamics.NoD[,4],
+       type = "l", lty = "dashed", cex = 0.5)
+
+points(out.dynamics.NoD[,1], out.dynamics.NoD[,5],
+       type = "l", lty = "longdash", cex = 0.5, col = "red")
+
+legend("topright", c("Active", "Dormant", "Predators"), 
+       lty = c("solid", "dashed", "longdash"), 
+       col = c("black", "black", "red"), cex = 0.4)
+
+dev.off()
+graphics.off()
+```
