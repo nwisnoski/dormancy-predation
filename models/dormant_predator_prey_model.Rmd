@@ -1,0 +1,316 @@
+---
+title: "Dormancy Predator-Prey Model"
+author: "Nathan Wisnoski"
+date: "November 3, 2015"
+output: pdf_document
+---
+
+### Initialize the system
+```{r}
+# Clear environment
+rm(list=ls())
+setwd("~/GitHub/predation/models/")
+require(png)
+require(deSolve)
+require(scatterplot3d)
+require(grid)
+```
+
+### Initialize Parameters
+```{r}
+R0 = 1
+A0 = 1
+D0 = 0
+P0 = .1
+
+timesteps = 300
+
+Q = 1.5                      # resource delivery
+e.r = 0.6                    # efficiency of resource consumption
+e.a = 0.2                    # predator efficiency of consuming actives
+e.d = 0.05                    # predator efficiency of consuming dormants
+c = 0.7                      # rate of resource consumption by actives
+f.a = 0.7                     # feeding rate of predators on prey
+f.d = 0.7
+dorm = 0.1                   # max fraction of population to enter dormancy
+resus = 0.03                  # constant fraction of dormant pool to resuscitate
+m.a = 0.01                    # mortality rate of active individuals
+m.d = 0.001                  # mortality rate of dormant individuals
+m.p = 0.3                    # mortality rate of predators
+
+
+r = 1.5
+K = 3
+h.r = 1
+h.a = 0.7
+h.d = 0.2
+```
+
+### Create Matrices for Time Dynamics
+```{r}
+time.dynamics <- matrix(data = NA, nrow = timesteps, ncol = 5)
+colnames(time.dynamics) <- c("t", "R", "A", "D", "P")
+time.dynamics[1, ] <- c(1, R0, A0, D0, P0)
+```
+
+#### Lotka-Volterra Models
+```{r}
+iter.LV <- function(in.matrix = "", timesteps = "", dormancy = ""){
+  if(dormancy == F){
+    dorm = 0
+    resus = 0
+  }
+  
+  R <- in.matrix[1,2]
+  A <- in.matrix[1,3]
+  D <- in.matrix[1,4]
+  P <- in.matrix[1,5]
+  
+  for(i in 1:(timesteps-1)){
+    R <- in.matrix[i,2]
+    A <- in.matrix[i,3]
+    D <- in.matrix[i,4]
+    P <- in.matrix[i,5]
+    
+    dR = Q - c*R*A
+    dA = e.r*c*R*A - f.a*P*A - dorm*A*exp(-R) + resus*D - m.a*A
+    dD = dorm*A*exp(-R) - resus*D - f.d*P*D - m.d*D
+    dP = e.a*f.a*P*A + e.d*f.d*P*D - m.p*P
+    
+    in.matrix[i+1, 1] <- i
+    in.matrix[i+1, 2] <- max((R + dR), 0)
+    in.matrix[i+1, 3] <- max((A + dA), 0)
+    in.matrix[i+1, 4] <- max((D + dD), 0)
+    in.matrix[i+1, 5] <- max((P + dP), 0)
+  }
+  
+  return(in.matrix)
+}
+
+```
+
+##### Run Simulation
+```{r}
+out.dynamics.D <- iter.LV(in.matrix = time.dynamics, timesteps = timesteps, dormancy = T)
+
+out.dynamics.NoD <- iter.LV(in.matrix = time.dynamics, timesteps = timesteps, dormancy = F)
+
+png("../figures/LV-dormancy.png", 
+    width = 1800, height = 1200, res = 96*2)
+
+# Plot With Dormancy
+dorm.plot <- plot(out.dynamics.D[,1], out.dynamics.D[,3], ylim = c(0, 5),
+                  main = "Temporal Dynamics with Dormancy",
+       xlab = "Time", ylab = "Density", type = "l", lty = "solid", cex = 0.5)
+
+points(out.dynamics.D[,1], out.dynamics.D[,4],
+       type = "l", lty = "dashed", cex = 0.5)
+
+points(out.dynamics.D[,1], out.dynamics.D[,5],
+       type = "l", lty = "longdash", cex = 0.5, col = "red")
+
+legend("topleft", c("Active", "Dormant", "Predators"), 
+       lty = c("solid", "dashed", "longdash"), 
+       col = c("black", "black", "red"), cex = 1, bty = "n")
+
+dev.off()
+
+png("../figures/LV-no-dormancy.png",
+    width = 1800, height = 1200, res = 96*2)
+
+# Plot Without Dormancy
+no.dorm.plot <- plot(out.dynamics.NoD[,1], out.dynamics.NoD[,3], ylim = c(0,5),
+                     main = "Temporal Dynamics Without Dormancy",
+       xlab = "Time", ylab = "Density", type = "l", lty = "solid", cex = 0.5)
+
+points(out.dynamics.NoD[,1], out.dynamics.NoD[,4],
+       type = "l", lty = "dashed", cex = 0.5)
+
+points(out.dynamics.NoD[,1], out.dynamics.NoD[,5],
+       type = "l", lty = "longdash", cex = 0.5, col = "red")
+
+legend("topleft", c("Active", "Dormant", "Predators"), 
+       lty = c("solid", "dashed", "longdash"), 
+       col = c("black", "black", "red"), cex = 1, bty = "n")
+
+dev.off()
+graphics.off()
+
+```
+
+```{r}
+img_dorm <- readPNG("../figures/LV-dormancy.png")
+grid.raster(img_dorm)
+
+img_nodorm <- readPNG("../figures/LV-no-dormancy.png")
+grid.raster(img_nodorm)
+```
+
+#### Rosenzweig-MacArthur Model
+```{r, eval=FALSE}
+iter.RM <- function(in.matrix = "", timesteps = "", dormancy = ""){
+  if(dormancy == F){
+    dorm = 0
+    resus = 0
+  }
+  
+  R <- in.matrix[1,2]
+  A <- in.matrix[1,3]
+  D <- in.matrix[1,4]
+  P <- in.matrix[1,5]
+  
+  for(i in 1:(timesteps-1)){
+    R <- in.matrix[i,2]
+    A <- in.matrix[i,3]
+    D <- in.matrix[i,4]
+    P <- in.matrix[i,5]
+    
+    dR = r*R*(1-R/K) - c*R*A/(h.r + R)
+    dA = e.r*c*R*A/(h.r + R) - f.a*P*A/(h.a + A) - dorm*A*exp(-R) + resus*D
+    dD = dorm*A - resus*D - f.d*P*D/(h.d + D)
+    dP = e.a*f.a*P*A/(h.a + A) + e.d*f.d*P*D/(h.d + D) - m.p*P
+    
+    in.matrix[i+1, 1] <- i
+    in.matrix[i+1, 2] <- max((R + dR), 0)
+    in.matrix[i+1, 3] <- max((A + dA), 0)
+    in.matrix[i+1, 4] <- max((D + dD), 0)
+    in.matrix[i+1, 5] <- max((P + dP), 0)
+  }
+  
+  return(in.matrix)
+}
+
+```
+
+# Stable Equilibrium w/o dormancy
+```{r}
+require(deSolve)
+require(scatterplot3d)
+
+a = .3
+gm = .005
+gg = .1
+gp = .4
+r = 2
+delta.max = 0
+d = 0.1
+ea=.4
+ed=.05
+f=.4
+
+Dorm<-function(t,state,parameters)
+{
+  with(as.list(c(state)), {
+    dA     <- D*gm - A*f*P*(gg+gm) + A*r*(gg+gm)*(1-D*gm-A*(gg+gm) - P*(gg+gm+gp)) - A*(gg+gm)*(D*gm+A*(gg+gm)+P*(gg+gm+gp))*delta.max
+    dD     <- -D*f*P*gm - D*a*gm + A*(gg+gm)*(D*gm+A*(gg+gm)+P*(gg+gm+gp))*delta.max
+    dP     <- -d*P*(gg+gm+gp) + A*f*P*ea*(gg+gm+gp) + D*f*P*ed*(gg+gm+gp)
+    list(c(dA,dD,dP)) }) }
+state <-c(A=1, D=0, P=1)
+times <-seq(0, 10000, 0.1)
+out   <-as.data.frame(ode(state,times,Dorm,0))
+
+png("../figures/Figure0.png", width = 1200, height = 1000, res = 2*96)
+scatterplot3d(out$A,out$D,out$P,type="l",
+              xlab = "Active", ylab = "Dormant", zlab = "Predators",
+              main="Predator-prey trajectory without Dormancy")
+dev.off()
+
+delta = seq(0,1,.1)
+
+for(i in 1:length(delta)){
+  delta.max = delta[i]
+  out   <-as.data.frame(ode(state,times,Dorm,0))
+  png(filename=paste("../figures/Figure",i,".png", sep=""), width = 1200, height = 1000, res = 2*96)
+  scatterplot3d(out$A, out$D, out$P, type="l", xlab = "Active", ylab = "Dormant", zlab = "Predators",
+              main = paste("Predator-prey trajectory with",delta[i],"Dormancy"),
+              xlim = c(0, 1.4), zlim = c(1, 2))
+  dev.off()
+}
+```
+
+
+```{r}
+iter.implicit.r <- function(in.matrix = "", timesteps = "", dormancy = ""){
+  if(dormancy == F){
+    delta.max = 0
+    a = 0
+  }
+  
+  A <- in.matrix[1,2]
+  D <- in.matrix[1,3]
+  P <- in.matrix[1,4]
+  
+  for(i in 1:(timesteps-1)){
+    A <- in.matrix[i,2]
+    D <- in.matrix[i,3]
+    P <- in.matrix[i,4]
+    
+    dA     <- D*gm - A*f*P*(gg+gm) + A*r*(gg+gm)*(1-D*gm-A*(gg+gm) - P*(gg+gm+gp)) - A*(gg+gm)*(D*gm+A*(gg+gm)+P*(gg+gm+gp))*delta.max
+    dD     <- -D*f*P*gm - D*a*gm + A*(gg+gm)*(D*gm+A*(gg+gm)+P*(gg+gm+gp))*delta.max
+    dP     <- -d*P*(gg+gm+gp) + A*f*P*ea*(gg+gm+gp) + D*f*P*ed*(gg+gm+gp)
+    
+    in.matrix[i+1, 1] <- i
+    in.matrix[i+1, 2] <- max((A + dA), 0)
+    in.matrix[i+1, 3] <- max((D + dD), 0)
+    in.matrix[i+1, 4] <- max((P + dP), 0)
+  }
+  
+  return(in.matrix)
+}
+```
+
+```{r}
+a = .3
+gm = .01
+gg = .02
+gp = .2
+r = 2
+delta.max = 0.1
+d = 0.1
+ea=.2
+ed=.05
+f=.2
+m.d = 0.001
+m.a = 0.01
+
+timesteps = 10000
+
+
+time.dynamics <- matrix(data = NA, nrow = timesteps, ncol = 4)
+colnames(time.dynamics) <- c("t", "A", "D", "P")
+time.dynamics[1, ] <- c(1, A0, D0, P0)
+out.dynamics.D <- iter.implicit.r(in.matrix = time.dynamics, timesteps = timesteps, dormancy = T)
+out.dynamics.NoD <- iter.implicit.r(in.matrix = time.dynamics, timesteps = timesteps, dormancy = F)
+
+
+#Plot Dormancy
+dorm.plot <- plot(out.dynamics.D[,1], out.dynamics.D[,2], ylim = c(0,50),
+                  main = "Temporal Dynamics with Dormancy",
+       xlab = "Time", ylab = "Density", type = "l", lty = "solid", cex = 0.5)
+
+points(out.dynamics.D[,1], out.dynamics.D[,3],
+       type = "l", lty = "dashed", cex = 0.5)
+
+points(out.dynamics.D[,1], out.dynamics.D[,4],
+       type = "l", lty = "longdash", cex = 0.5, col = "red")
+
+legend("topleft", c("Active", "Dormant", "Predators"), 
+       lty = c("solid", "dashed", "longdash"), 
+       col = c("black", "black", "red"), cex = 1, bty = "n")
+
+# Plot Without Dormancy
+no.dorm.plot <- plot(out.dynamics.NoD[,1], out.dynamics.NoD[,2], ylim = c(0,50),
+                     main = "Temporal Dynamics Without Dormancy",
+       xlab = "Time", ylab = "Density", type = "l", lty = "solid", cex = 0.5)
+
+points(out.dynamics.NoD[,1], out.dynamics.NoD[,3],
+       type = "l", lty = "dashed", cex = 0.5)
+
+points(out.dynamics.NoD[,1], out.dynamics.NoD[,4],
+       type = "l", lty = "longdash", cex = 0.5, col = "red")
+
+legend("topleft", c("Active", "Dormant", "Predators"), 
+       lty = c("solid", "dashed", "longdash"), 
+       col = c("black", "black", "red"), cex = 1, bty = "n")
+
+```
