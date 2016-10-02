@@ -244,9 +244,9 @@ iter.implicit.r <- function(in.matrix = "", timesteps = "", dormancy = ""){
     D <- in.matrix[i,3]
     P <- in.matrix[i,4]
     
-    dA     <- D*gm - A*f*P*(gg+gm) + A*r*(gg+gm)*(1-D*gm-A*(gg+gm) - P*(gg+gm+gp)) - A*(gg+gm)*(D*gm+A*(gg+gm)+P*(gg+gm+gp))*delta.max
-    dD     <- -D*f*P*gm - D*a*gm + A*(gg+gm)*(D*gm+A*(gg+gm)+P*(gg+gm+gp))*delta.max
-    dP     <- -d*P*(gg+gm+gp) + A*f*P*ea*(gg+gm+gp) + D*f*P*ed*(gg+gm+gp)
+    dA     <- D*gm - A*f*P*(gg+gm) + A*r*(gg+gm)*(1-D*gm-A*(gg+gm) - P*(gg+gm+gp)) - A*(gg+gm)*(D*gm+A*(gg+gm)+P*(gg+gm+gp))*delta.max*runif(1)
+    dD     <- -D*f*P*gm - D*a*gm + A*(gg+gm)*(D*gm+A*(gg+gm)+P*(gg+gm+gp))*delta.max*runif(1)
+    dP     <- -d*P*(gg+gm+gp)*runif(1) + A*f*P*ea*(gg+gm+gp) + D*f*P*ed*(gg+gm+gp)
     
     in.matrix[i+1, 1] <- i
     in.matrix[i+1, 2] <- max((A + dA), 0)
@@ -272,7 +272,7 @@ f=.4
 m.d = 0.0001
 m.a = 0.01
 
-timesteps = 1000
+timesteps = 10000
 
 
 time.dynamics <- matrix(data = NA, nrow = timesteps, ncol = 4)
@@ -334,4 +334,151 @@ mtext(side = 1, "Timestep", line = 3, cex = 1.5)
 dev.off()
 img <- png::readPNG("./figures/EnergyMod_Dynamics.png")
 grid.raster(img)
+```
+
+```{r}
+
+time.dynamics <- matrix(data = NA, nrow = timesteps, ncol = 7)
+colnames(time.dynamics) <- c("t", "A1", "D1", "P1",
+                             "A2", "D2", "P2")
+time.dynamics[1, ] <- c(1, A0, D0, P0, A0, D0, P0)
+
+m.a <- 0.05
+m.p <- 0.1
+
+iter.energetic.dispersal <- function(in.matrix = "", timesteps = "", dormancy = ""){
+  if(dormancy == F){
+    delta.max = 0
+    a = 0
+  }
+  
+  A1 <- in.matrix[1,2]
+  D1 <- in.matrix[1,3]
+  P1 <- in.matrix[1,4]
+  A2 <- in.matrix[1,5]
+  D2 <- in.matrix[1,6]
+  P2 <- in.matrix[1,7]
+  
+  for(i in 1:(timesteps-1)){
+    A1 <- as.numeric(in.matrix[i,2])
+    D1 <- as.numeric(in.matrix[i,3])
+    P1 <- as.numeric(in.matrix[i,4])
+    A2 <- as.numeric(in.matrix[i,5])
+    D2 <- as.numeric(in.matrix[i,6])
+    P2 <- as.numeric(in.matrix[i,7])
+    
+    dA1     <- D1*gm - A1*f*P1*(gg+gm) + A1*r*(gg+gm)*(1-D1*gm-A1*(gg+gm) - P1*(gg+gm+gp)) - A1*(gg+gm)*(D1*gm+A1*(gg+gm)+P1*(gg+gm+gp))*delta.max*runif(1) + m.a*(A2-A1)*runif(1)
+    dD1     <- -D1*f*P1*gm - D1*a*gm + A1*(gg+gm)*(D1*gm+A1*(gg+gm)+P1*(gg+gm+gp))*delta.max*runif(1)
+    dP1     <- -d*P1*(gg+gm+gp) + A1*f*P1*ea*(gg+gm+gp) + D1*f*P1*ed*(gg+gm+gp) + m.p*(P2-P1)*runif(1)
+    
+    dA2     <- D2*gm - A2*f*P2*(gg+gm) + A2*r*(gg+gm)*(2-D2*gm-A2*(gg+gm) - P2*(gg+gm+gp)) - A2*(gg+gm)*(D2*gm+A2*(gg+gm)+P2*(gg+gm+gp))*delta.max*runif(1) - m.a*(A2-A1)*runif(1)
+    dD2     <- -D2*f*P2*gm - D2*a*gm + A2*(gg+gm)*(D2*gm+A2*(gg+gm)+P2*(gg+gm+gp))*delta.max*runif(1)
+    dP2     <- -d*P2*(gg+gm+gp) + A2*f*P2*ea*(gg+gm+gp) + D2*f*P2*ed*(gg+gm+gp) - m.p*(P2-P1)*runif(1)
+
+    
+    in.matrix[i+1, 1] <- i
+    in.matrix[i+1, 2] <- max((A1 + dA1), 0)
+    in.matrix[i+1, 3] <- max((D1 + dD1), 0)
+    in.matrix[i+1, 4] <- max((P1 + dP1), 0)
+    in.matrix[i+1, 5] <- max((A2 + dA2), 0)
+    in.matrix[i+1, 6] <- max((D2 + dD2), 0)
+    in.matrix[i+1, 7] <- max((P2 + dP2), 0)
+  }
+  
+  return(in.matrix)
+}
+```
+
+```{r}
+out.dynamics.D <- iter.energetic.dispersal(in.matrix = time.dynamics, timesteps = timesteps, dormancy = T)
+out.dynamics.NoD <- iter.energetic.dispersal(in.matrix = time.dynamics, timesteps = timesteps, dormancy = F)
+
+par(mfcol = c(2,2))
+par(mar = c(2,5,3,1))
+#Plot Dormancy
+dorm.plot <- plot(out.dynamics.D[,1], out.dynamics.D[,2], 
+                  ylim = c(0,max(out.dynamics.NoD[,2:4], out.dynamics.D[,2:4])),
+       xlab = "", ylab = "", xaxt = "n", yaxt = "n", type = "l", lty = "solid", cex = 0.5)
+
+points(out.dynamics.D[,1], out.dynamics.D[,3],
+       type = "l", lty = "dashed", cex = 0.5)
+
+points(out.dynamics.D[,1], out.dynamics.D[,4],
+       type = "l", lty = "longdash", cex = 0.5, col = "red")
+
+axis(side = 1, lwd.ticks = 2, cex.axis = 1.2, las = 1, labels = F)
+axis(side = 2, lwd.ticks = 2, cex.axis = 1.2, las = 1)
+axis(side = 3, lwd.ticks = 2, cex.axis = 1.2, las = 1, labels = F)
+axis(side = 4, lwd.ticks = 2, cex.axis = 1.2, las = 1, labels = F)
+box(lwd = 2)
+mtext(side = 2, "Density\n(With Dormancy)", line = 2.5, cex = 1.2)
+mtext(side = 3, "Patch 1", line = 1, cex = 1.5)
+
+# legend("topleft", c("Active", "Dormant", "Predators"), 
+#        lty = c("solid", "dashed", "longdash"), 
+#        col = c("black", "black", "red"), cex = 1, bty = "n")
+
+# Plot Without Dormancy
+par(mar = c(5,5,0,1))
+no.dorm.plot <- plot(out.dynamics.NoD[,1], out.dynamics.NoD[,2], 
+                     ylim = c(0,max(out.dynamics.NoD[,2:7], out.dynamics.D[,2:7])),
+       xlab = "", ylab = "", xaxt = "n", yaxt = "n", type = "l", lty = "solid", cex = 0.5)
+
+points(out.dynamics.NoD[,1], out.dynamics.NoD[,3],
+       type = "l", lty = "dashed", cex = 0.5)
+
+points(out.dynamics.NoD[,1], out.dynamics.NoD[,4],
+       type = "l", lty = "longdash", cex = 0.5, col = "red")
+
+axis(side = 1, lwd.ticks = 2, cex.axis = 1.2, las = 1)
+axis(side = 2, lwd.ticks = 2, cex.axis = 1.2, las = 1)
+axis(side = 3, lwd.ticks = 2, cex.axis = 1.2, las = 1, labels = F)
+axis(side = 4, lwd.ticks = 2, cex.axis = 1.2, las = 1, labels = F)
+box(lwd = 2)
+mtext(side = 2, "Density\n(No Dormancy)", line = 2.5, cex = 1.2)
+mtext(side = 1, "Timestep", line = 3, cex = 1.5)
+
+
+par(mar = c(2,1,3,5))
+#Plot Dormancy
+dorm.plot <- plot(out.dynamics.D[,1], out.dynamics.D[,5], 
+                  ylim = c(0,max(out.dynamics.NoD[,2:7], out.dynamics.D[,2:7])),
+       xlab = "", ylab = "", xaxt = "n", yaxt = "n", type = "l", lty = "solid", cex = 0.5)
+
+points(out.dynamics.D[,1], out.dynamics.D[,6],
+       type = "l", lty = "dashed", cex = 0.5)
+
+points(out.dynamics.D[,1], out.dynamics.D[,7],
+       type = "l", lty = "longdash", cex = 0.5, col = "red")
+
+axis(side = 1, lwd.ticks = 2, cex.axis = 1.2, las = 1, labels = F)
+axis(side = 2, lwd.ticks = 2, cex.axis = 1.2, las = 1, labels = F)
+axis(side = 3, lwd.ticks = 2, cex.axis = 1.2, las = 1, labels = F)
+axis(side = 4, lwd.ticks = 2, cex.axis = 1.2, las = 1, labels = F)
+box(lwd = 2)
+mtext(side = 3, "Patch 2", line = 1, cex = 1.5)
+# legend("topleft", c("Active", "Dormant", "Predators"), 
+#        lty = c("solid", "dashed", "longdash"), 
+#        col = c("black", "black", "red"), cex = 1, bty = "n")
+
+# Plot Without Dormancy
+par(mar = c(5,1,0,5))
+no.dorm.plot <- plot(out.dynamics.NoD[,1], out.dynamics.NoD[,5], 
+                     ylim = c(0,max(out.dynamics.NoD[,2:7], out.dynamics.D[,2:7])),
+       xlab = "", ylab = "", xaxt = "n", yaxt = "n", type = "l", lty = "solid", cex = 0.5)
+
+points(out.dynamics.NoD[,1], out.dynamics.NoD[,6],
+       type = "l", lty = "dashed", cex = 0.5)
+
+points(out.dynamics.NoD[,1], out.dynamics.NoD[,7],
+       type = "l", lty = "longdash", cex = 0.5, col = "red")
+
+axis(side = 1, lwd.ticks = 2, cex.axis = 1.2, las = 1)
+axis(side = 2, lwd.ticks = 2, cex.axis = 1.2, las = 1, labels = F)
+axis(side = 3, lwd.ticks = 2, cex.axis = 1.2, las = 1, labels = F)
+axis(side = 4, lwd.ticks = 2, cex.axis = 1.2, las = 1, labels = F)
+box(lwd = 2)
+mtext(side = 1, "Timestep", line = 3, cex = 1.5)
+
+
 ```
