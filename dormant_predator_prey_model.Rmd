@@ -9,7 +9,6 @@ output: pdf_document
 ```{r}
 # Clear environment
 rm(list=ls())
-setwd("~/GitHub/predation/")
 require(png)
 require(deSolve)
 require(scatterplot3d)
@@ -95,8 +94,8 @@ out.dynamics.D <- iter.LV(in.matrix = time.dynamics, timesteps = timesteps, dorm
 
 out.dynamics.NoD <- iter.LV(in.matrix = time.dynamics, timesteps = timesteps, dormancy = F)
 
-png("./figures/LV-dormancy.png", 
-    width = 1800, height = 1200, res = 96*2)
+#png("./figures/LV-dormancy.png", 
+#    width = 1800, height = 1200, res = 96*2)
 
 # Plot With Dormancy
 dorm.plot <- plot(out.dynamics.D[,1], out.dynamics.D[,3], ylim = c(0, 5),
@@ -115,8 +114,8 @@ legend("topleft", c("Active", "Dormant", "Predators"),
 
 dev.off()
 
-png("./figures/LV-no-dormancy.png",
-    width = 1800, height = 1200, res = 96*2)
+#png("./figures/LV-no-dormancy.png",
+#    width = 1800, height = 1200, res = 96*2)
 
 # Plot Without Dormancy
 no.dorm.plot <- plot(out.dynamics.NoD[,1], out.dynamics.NoD[,3], ylim = c(0,5),
@@ -260,20 +259,20 @@ iter.implicit.r <- function(in.matrix = "", timesteps = "", dormancy = ""){
 ```
 
 ```{r}
-a = .3
-gm = .01
-gg = .02
-gp = .2
+a = .9
+gm = .1
+gg = .05
+gp = .7
 r = 2
-delta.max = 0.1
+delta.max = 0.05
 d = 0.1
-ea=.2
-ed=.05
-f=.2
-m.d = 0.001
+ea=.7
+ed=.0
+f=.4
+m.d = 0.0001
 m.a = 0.01
 
-timesteps = 10000
+timesteps = 1000
 
 
 time.dynamics <- matrix(data = NA, nrow = timesteps, ncol = 4)
@@ -283,10 +282,14 @@ out.dynamics.D <- iter.implicit.r(in.matrix = time.dynamics, timesteps = timeste
 out.dynamics.NoD <- iter.implicit.r(in.matrix = time.dynamics, timesteps = timesteps, dormancy = F)
 
 
+dev.off()
+png("./figures/EnergyMod_Dynamics.png", width = 1200, height = 1000, res = 2*96)
+par(mfrow = c(2,1))
+par(mar = c(2,5,3,3))
 #Plot Dormancy
-dorm.plot <- plot(out.dynamics.D[,1], out.dynamics.D[,2], ylim = c(0,50),
-                  main = "Temporal Dynamics with Dormancy",
-       xlab = "Time", ylab = "Density", type = "l", lty = "solid", cex = 0.5)
+dorm.plot <- plot(out.dynamics.D[,1], out.dynamics.D[,2], 
+                  ylim = c(0,max(out.dynamics.NoD[,2:4], out.dynamics.D[,2:4])),
+       xlab = "", ylab = "", xaxt = "n", yaxt = "n", type = "l", lty = "solid", cex = 0.5)
 
 points(out.dynamics.D[,1], out.dynamics.D[,3],
        type = "l", lty = "dashed", cex = 0.5)
@@ -294,14 +297,22 @@ points(out.dynamics.D[,1], out.dynamics.D[,3],
 points(out.dynamics.D[,1], out.dynamics.D[,4],
        type = "l", lty = "longdash", cex = 0.5, col = "red")
 
-legend("topleft", c("Active", "Dormant", "Predators"), 
-       lty = c("solid", "dashed", "longdash"), 
-       col = c("black", "black", "red"), cex = 1, bty = "n")
+axis(side = 1, lwd.ticks = 2, cex.axis = 1.2, las = 1, labels = F)
+axis(side = 2, lwd.ticks = 2, cex.axis = 1.2, las = 1)
+axis(side = 3, lwd.ticks = 2, cex.axis = 1.2, las = 1, labels = F)
+axis(side = 4, lwd.ticks = 2, cex.axis = 1.2, las = 1, labels = F)
+box(lwd = 2)
+mtext(side = 2, "Density\n(With Dormancy)", line = 2.5, cex = 1.2)
+
+# legend("topleft", c("Active", "Dormant", "Predators"), 
+#        lty = c("solid", "dashed", "longdash"), 
+#        col = c("black", "black", "red"), cex = 1, bty = "n")
 
 # Plot Without Dormancy
-no.dorm.plot <- plot(out.dynamics.NoD[,1], out.dynamics.NoD[,2], ylim = c(0,50),
-                     main = "Temporal Dynamics Without Dormancy",
-       xlab = "Time", ylab = "Density", type = "l", lty = "solid", cex = 0.5)
+par(mar = c(5,5,0,3))
+no.dorm.plot <- plot(out.dynamics.NoD[,1], out.dynamics.NoD[,2], 
+                     ylim = c(0,max(out.dynamics.NoD[,2:4], out.dynamics.D[,2:4])),
+       xlab = "", ylab = "", xaxt = "n", yaxt = "n", type = "l", lty = "solid", cex = 0.5)
 
 points(out.dynamics.NoD[,1], out.dynamics.NoD[,3],
        type = "l", lty = "dashed", cex = 0.5)
@@ -309,8 +320,18 @@ points(out.dynamics.NoD[,1], out.dynamics.NoD[,3],
 points(out.dynamics.NoD[,1], out.dynamics.NoD[,4],
        type = "l", lty = "longdash", cex = 0.5, col = "red")
 
-legend("topleft", c("Active", "Dormant", "Predators"), 
-       lty = c("solid", "dashed", "longdash"), 
-       col = c("black", "black", "red"), cex = 1, bty = "n")
+axis(side = 1, lwd.ticks = 2, cex.axis = 1.2, las = 1)
+axis(side = 2, lwd.ticks = 2, cex.axis = 1.2, las = 1)
+axis(side = 3, lwd.ticks = 2, cex.axis = 1.2, las = 1, labels = F)
+axis(side = 4, lwd.ticks = 2, cex.axis = 1.2, las = 1, labels = F)
+box(lwd = 2)
+mtext(side = 2, "Density\n(No Dormancy)", line = 2.5, cex = 1.2)
+mtext(side = 1, "Timestep", line = 3, cex = 1.5)
 
+# legend("topleft", c("Active", "Dormant", "Predators"), 
+#        lty = c("solid", "dashed", "longdash"), 
+#        col = c("black", "black", "red"), cex = 1, bty = "n")
+dev.off()
+img <- png::readPNG("./figures/EnergyMod_Dynamics.png")
+grid.raster(img)
 ```
