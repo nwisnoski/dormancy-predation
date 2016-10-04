@@ -264,15 +264,15 @@ gm = .1
 gg = .05
 gp = .7
 r = 2
-delta.max = 0.05
-d = 0.1
+delta.max = 0.9
+d = 0.3
 ea=.7
 ed=.0
 f=.4
-m.d = 0.0001
-m.a = 0.01
+#m.d = 0.001
+#m.a = 0.1
 
-timesteps = 10000
+timesteps = 1000
 
 
 time.dynamics <- matrix(data = NA, nrow = timesteps, ncol = 4)
@@ -343,8 +343,6 @@ colnames(time.dynamics) <- c("t", "A1", "D1", "P1",
                              "A2", "D2", "P2")
 time.dynamics[1, ] <- c(1, A0, D0, P0, A0, D0, P0)
 
-m.a <- 0.05
-m.p <- 0.1
 
 iter.energetic.dispersal <- function(in.matrix = "", timesteps = "", dormancy = ""){
   if(dormancy == F){
@@ -390,6 +388,9 @@ iter.energetic.dispersal <- function(in.matrix = "", timesteps = "", dormancy = 
 ```
 
 ```{r}
+m.a <- 0.0
+m.p <- 0.9
+
 out.dynamics.D <- iter.energetic.dispersal(in.matrix = time.dynamics, timesteps = timesteps, dormancy = T)
 out.dynamics.NoD <- iter.energetic.dispersal(in.matrix = time.dynamics, timesteps = timesteps, dormancy = F)
 
