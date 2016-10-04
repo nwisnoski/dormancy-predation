@@ -11,63 +11,73 @@ require(png)
 require(grid)
 
 # initialize model parameters:
-timesteps = 1000
+timesteps = 100000
+s = 100
 
-gm = .1             # maintenance energy req./unit biomass
-gg = .05            # growth energy req. / unit biomass
-gp = .7             # additional predator energy required / unit biomass
-r = 2               # intrinsic growth rate of the prey
-delta.max = 0.9     # maximum dormancy rate /step
-alpha.max = 0.9     # maximum reactivation rate /step
-ea =.7              # conversion efficiency on active prey
-ed =.0              # conversion efficiency on dormant prey (0 = inedible)
-fa =.4              # feeding rate of predators on active prey
-fd = .4             # feeding rate of predators on dormant prey
-m.d = 0.001         # death rate of dormant prey
-m.a = 0.1           # death rate of active prey
-m.p = 0.3           # predator death rate
+A0 = 1
+D0 = 0
+P0 = 1
+R0 = 1
+
+#gm = .000001             # maintenance energy req./unit biomass
+#gg = .000005            # growth energy req. / unit biomass
+#gp = .00007             # additional predator energy required / unit biomass
+Q = 2 /s                 # resource renewal rate
+r = 1.2 /s           # intrinsic growth rate of the prey
+delta.max = 1 /s    # maximum dormancy rate /step
+alpha.max = 1 /s    # maximum reactivation rate /step
+ea =.5 /s             # conversion efficiency on active prey
+ed =.0 /s             # conversion efficiency on dormant prey (0 = inedible)
+fa =.5 /s             # feeding rate of predators on active prey
+fd = .0  /s           # feeding rate of predators on dormant prey
+m.d = 0.0001  /s       # death rate of dormant prey
+m.a = 0.05   /s        # death rate of active prey
+m.p = 0.05   /s        # predator death rate
 
 # define model
 PPdorm.energetic <- function(in.matrix = "", timesteps = "", dormancy = ""){
   if(dormancy == F){
     delta.max = 0
-    a = 0
+    alpha.max = 0
   }
   
   A <- in.matrix[1,2]
   D <- in.matrix[1,3]
   P <- in.matrix[1,4]
+  R <- in.matrix[1,5]
   
   for(i in 1:(timesteps-1)){
     A <- in.matrix[i,2]
     D <- in.matrix[i,3]
     P <- in.matrix[i,4]
-    R <- 1 - (A*(gg+gm) + D*(gm) + P*(gg+gm+gp))
+    R <- in.matrix[i,5]
     
     delta <- runif(1, max = delta.max)
     alpha <- runif(1, max = alpha.max)
     
-    dA     <- r*R*A - delta*(1-R)*A* + alpha*D - fa*A*P - runif(1,max=m.a)*A
-    dD     <- delta*(1-R)*A - alpha*D - fd*D*P - runif(1,max=m.d)*D
+    dR     <- Q*R - r*R*A
+    dA     <- r*R*A - delta*exp(-R)*A* + alpha*D*R - fa*A*P - runif(1,max=m.a)*A
+    dD     <- delta*exp(-R)*A - alpha*D*R - fd*D*P - runif(1,max=m.d)*D
     dP     <- ea*fa*A*P + ed*fd*D*P - runif(1,max=m.p)*P
     
     in.matrix[i+1, 1] <- i
     in.matrix[i+1, 2] <- max((A + dA), 0)
     in.matrix[i+1, 3] <- max((D + dD), 0)
     in.matrix[i+1, 4] <- max((P + dP), 0)
+    in.matrix[i+1, 5] <- max((R + dR), 0)
   }
   
   return(in.matrix)
 }
 
 # Initialize time dynamics
-time.dynamics <- matrix(data = NA, nrow = timesteps, ncol = 4)
-colnames(time.dynamics) <- c("t", "A", "D", "P")
-time.dynamics[1, ] <- c(1, A0, D0, P0)
+time.dynamics <- matrix(data = NA, nrow = timesteps, ncol = 5)
+colnames(time.dynamics) <- c("t", "A", "D", "P", "R")
+time.dynamics[1, ] <- c(1, A0, D0, P0, R0)
 
 # Run the model with and without dormancy
-out.dynamics.D <- iter.implicit.r(in.matrix = time.dynamics, timesteps = timesteps, dormancy = T)
-out.dynamics.NoD <- iter.implicit.r(in.matrix = time.dynamics, timesteps = timesteps, dormancy = F)
+out.dynamics.D <- PPdorm.energetic(in.matrix = time.dynamics, timesteps = timesteps, dormancy = T)
+out.dynamics.NoD <- PPdorm.energetic(in.matrix = time.dynamics, timesteps = timesteps, dormancy = F)
 
 
 # Plot the temporal dynamics
