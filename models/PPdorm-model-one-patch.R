@@ -11,28 +11,31 @@ require(png)
 require(grid)
 
 # initialize model parameters:
-timesteps = 100000
-s = 100
+timesteps = 10000
+s = 10
 
 A0 = 1
 D0 = 0
-P0 = 1
+P0 = .1
 R0 = 1
 
-#gm = .000001             # maintenance energy req./unit biomass
-#gg = .000005            # growth energy req. / unit biomass
-#gp = .00007             # additional predator energy required / unit biomass
-Q = 2 /s                 # resource renewal rate
-r = 1.2 /s           # intrinsic growth rate of the prey
-delta.max = 1 /s    # maximum dormancy rate /step
-alpha.max = 1 /s    # maximum reactivation rate /step
-ea =.5 /s             # conversion efficiency on active prey
-ed =.0 /s             # conversion efficiency on dormant prey (0 = inedible)
-fa =.5 /s             # feeding rate of predators on active prey
-fd = .0  /s           # feeding rate of predators on dormant prey
-m.d = 0.0001  /s       # death rate of dormant prey
-m.a = 0.05   /s        # death rate of active prey
+Q = .5 /s                 # mean resource renewal rate
+a = 0.95*Q                # amplitude of fluctuation in resource inflow
+w = .001/s              # periodicity of flucutations
+c = .5 /s           # resource consumption rate of the prey
+delta.max = .8 /s    # maximum dormancy rate /step
+alpha.max = .2 /s    # maximum reactivation rate /step
+e.r = .8 /s          # conversion rate on resource
+e.a = .7 /s             # conversion rate on active prey
+e.d = .0 /s             # conversion rate on dormant prey (0 = inedible)
+f.a = .8 /s             # feeding rate of predators on active prey
+f.d = .0  /s           # feeding rate of predators on dormant prey
+m.d = 0.001  /s       # death rate of dormant prey
+m.a = 0.01   /s        # death rate of active prey
 m.p = 0.05   /s        # predator death rate
+
+
+extinct.thresh = 0.00001
 
 # define model
 PPdorm.energetic <- function(in.matrix = "", timesteps = "", dormancy = ""){
@@ -52,18 +55,18 @@ PPdorm.energetic <- function(in.matrix = "", timesteps = "", dormancy = ""){
     P <- in.matrix[i,4]
     R <- in.matrix[i,5]
     
-    delta <- runif(1, max = delta.max)
-    alpha <- runif(1, max = alpha.max)
+    delta <- runif(1, max = delta.max*exp(-R))
+    alpha <- runif(1, max = alpha.max*(1-exp(-R)))
     
-    dR     <- Q*R - r*R*A
-    dA     <- r*R*A - delta*exp(-R)*A* + alpha*D*R - fa*A*P - runif(1,max=m.a)*A
-    dD     <- delta*exp(-R)*A - alpha*D*R - fd*D*P - runif(1,max=m.d)*D
-    dP     <- ea*fa*A*P + ed*fd*D*P - runif(1,max=m.p)*P
+    dR     <- Q + a*sin(w*i) - c*R*A
+    dA     <- e.r*c*R*A - delta*A* + alpha*D - f.a*A*P - runif(1,max=m.a)*A
+    dD     <- delta*A - alpha*D - f.d*D*P - runif(1,max=m.d)*D
+    dP     <- e.a*f.a*A*P + e.d*f.d*D*P - runif(1,max=m.p)*P
     
     in.matrix[i+1, 1] <- i
-    in.matrix[i+1, 2] <- max((A + dA), 0)
+    in.matrix[i+1, 2] <- max(((A + dA) > extinct.thresh)*(A+dA), 0) # return 0 if pop below thresh.
     in.matrix[i+1, 3] <- max((D + dD), 0)
-    in.matrix[i+1, 4] <- max((P + dP), 0)
+    in.matrix[i+1, 4] <- max(((P + dP) > extinct.thresh)*(P+dP), 0)
     in.matrix[i+1, 5] <- max((R + dR), 0)
   }
   
@@ -81,7 +84,7 @@ out.dynamics.NoD <- PPdorm.energetic(in.matrix = time.dynamics, timesteps = time
 
 
 # Plot the temporal dynamics
-png("./figures/EnergyMod_one-patch_Dynamics.png", width = 1200, height = 1000, res = 2*96)
+png("./figures/PPdorm_one-patch_Dynamics.png", width = 1200, height = 1000, res = 2*96)
 par(mfrow = c(2,1))
 par(mar = c(2,5,3,3))
 dorm.plot <- plot(out.dynamics.D[,1], out.dynamics.D[,2], 
@@ -89,10 +92,10 @@ dorm.plot <- plot(out.dynamics.D[,1], out.dynamics.D[,2],
                   xlab = "", ylab = "", xaxt = "n", yaxt = "n", type = "l", lty = "solid", cex = 0.5)
 
 points(out.dynamics.D[,1], out.dynamics.D[,3],
-       type = "l", lty = "dashed", cex = 0.5)
+       type = "l", lty = "solid", cex = 0.5, col = "green")
 
 points(out.dynamics.D[,1], out.dynamics.D[,4],
-       type = "l", lty = "longdash", cex = 0.5, col = "red")
+       type = "l", lty = "solid", cex = 0.5, col = "red")
 
 axis(side = 1, lwd.ticks = 2, cex.axis = 1.2, las = 1, labels = F)
 axis(side = 2, lwd.ticks = 2, cex.axis = 1.2, las = 1)
@@ -102,8 +105,8 @@ box(lwd = 2)
 mtext(side = 2, "Density\n(With Dormancy)", line = 2.5, cex = 1.2)
 
 legend("topright", c("Active", "Dormant", "Predators"),
-       lty = c("solid", "dashed", "longdash"),
-       col = c("black", "black", "red"), cex = 1, bty = "n")
+       lty = c("solid", "solid", "solid"),
+       col = c("black", "green", "red"), cex = 1, bty = "n")
 
 # Plot Without Dormancy
 par(mar = c(5,5,0,3))
@@ -112,10 +115,10 @@ no.dorm.plot <- plot(out.dynamics.NoD[,1], out.dynamics.NoD[,2],
                      xlab = "", ylab = "", xaxt = "n", yaxt = "n", type = "l", lty = "solid", cex = 0.5)
 
 points(out.dynamics.NoD[,1], out.dynamics.NoD[,3],
-       type = "l", lty = "dashed", cex = 0.5)
+       type = "l", lty = "solid", cex = 0.5, col = "green")
 
 points(out.dynamics.NoD[,1], out.dynamics.NoD[,4],
-       type = "l", lty = "longdash", cex = 0.5, col = "red")
+       type = "l", lty = "solid", cex = 0.5, col = "red")
 
 axis(side = 1, lwd.ticks = 2, cex.axis = 1.2, las = 1)
 axis(side = 2, lwd.ticks = 2, cex.axis = 1.2, las = 1)
@@ -128,5 +131,5 @@ mtext(side = 1, "Timestep", line = 3, cex = 1.5)
 
 dev.off()
 graphics.off()
-img <- png::readPNG("./figures/EnergyMod_one-patch_Dynamics.png")
+img <- png::readPNG("./figures/PPdorm_one-patch_Dynamics.png")
 grid.raster(img)
