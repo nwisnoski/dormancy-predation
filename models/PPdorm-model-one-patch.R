@@ -12,27 +12,30 @@ require(grid)
 
 # initialize model parameters:
 timesteps = 10000
-s = 10
 
-A0 = 1
+
+A0 = .1
 D0 = 0
 P0 = .1
 R0 = 1
 
-Q = .5 /s                 # mean resource renewal rate
-a = 0.95*Q                # amplitude of fluctuation in resource inflow
-w = .001/s              # periodicity of flucutations
-c = .5 /s           # resource consumption rate of the prey
-delta.max = .8 /s    # maximum dormancy rate /step
-alpha.max = .2 /s    # maximum reactivation rate /step
-e.r = .8 /s          # conversion rate on resource
-e.a = .7 /s             # conversion rate on active prey
-e.d = .0 /s             # conversion rate on dormant prey (0 = inedible)
-f.a = .8 /s             # feeding rate of predators on active prey
-f.d = .0  /s           # feeding rate of predators on dormant prey
-m.d = 0.001  /s       # death rate of dormant prey
-m.a = 0.01   /s        # death rate of active prey
-m.p = 0.05   /s        # predator death rate
+Q = .001              # mean resource renewal rate
+a = 0*Q                # amplitude of fluctuation in resource inflow
+w = .001             # periodicity of flucutations
+c = .5         # resource consumption rate of the prey
+dorm.max = .5    # maximum dormancy rate /step
+react.max = .4    # maximum reactivation rate /step
+e.r = .8          # conversion rate on resource
+e.a = .4            # conversion rate on active prey
+e.d = .0            # conversion rate on dormant prey (0 = inedible)
+f.a = .6           # feeding rate of predators on active prey
+f.d = .001        # feeding rate of predators on dormant prey
+m.d = 0.001        # death rate of dormant prey
+m.a = 0.01           # death rate of active prey
+m.p = 0.05          # predator death rate
+a.ii = 0.01       # strength of intraspecific competition
+l = 0.00         # loss rate of resource in patch
+
 
 
 extinct.thresh = 0.00001
@@ -40,8 +43,8 @@ extinct.thresh = 0.00001
 # define model
 PPdorm.energetic <- function(in.matrix = "", timesteps = "", dormancy = ""){
   if(dormancy == F){
-    delta.max = 0
-    alpha.max = 0
+    dorm.max = 0
+    react.max = 0
   }
   
   A <- in.matrix[1,2]
@@ -55,12 +58,12 @@ PPdorm.energetic <- function(in.matrix = "", timesteps = "", dormancy = ""){
     P <- in.matrix[i,4]
     R <- in.matrix[i,5]
     
-    delta <- runif(1, max = delta.max*exp(-R))
-    alpha <- runif(1, max = alpha.max*(1-exp(-R)))
+    dorm <- runif(1, max = dorm.max*exp(-R))
+    react <- runif(1, max = react.max*(1-exp(-R)))
     
-    dR     <- Q + a*sin(w*i) - c*R*A
-    dA     <- e.r*c*R*A - delta*A* + alpha*D - f.a*A*P - runif(1,max=m.a)*A
-    dD     <- delta*A - alpha*D - f.d*D*P - runif(1,max=m.d)*D
+    dR     <- Q + a*sin(w*i) - c*R*A - l*R
+    dA     <- e.r*c*R*A*(1-A*a.ii) - dorm*A + react*D - f.a*A*P - runif(1,max=m.a)*A
+    dD     <- dorm*A - react*D - f.d*D*P - runif(1,max=m.d)*D
     dP     <- e.a*f.a*A*P + e.d*f.d*D*P - runif(1,max=m.p)*P
     
     in.matrix[i+1, 1] <- i
