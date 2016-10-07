@@ -14,14 +14,20 @@ require(grid)
 timesteps = 10000
 
 
+# set initial densities
 A0 = .1
 D0 = 0
 P0 = .1
 R0 = 1
 
+# set habitat quality
 Q = .001              # mean resource renewal rate
 a = 0*Q                # amplitude of fluctuation in resource inflow
 w = .001             # periodicity of flucutations
+l = 0.00         # loss rate of resource in patch
+
+
+# set vital rates
 c = .5         # resource consumption rate of the prey
 dorm.max = .5    # maximum dormancy rate /step
 react.max = .4    # maximum reactivation rate /step
@@ -34,7 +40,6 @@ m.d = 0.001        # death rate of dormant prey
 m.a = 0.01           # death rate of active prey
 m.p = 0.05          # predator death rate
 a.ii = 0.01       # strength of intraspecific competition
-l = 0.00         # loss rate of resource in patch
 
 
 
