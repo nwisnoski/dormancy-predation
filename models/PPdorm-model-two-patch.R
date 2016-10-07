@@ -123,7 +123,7 @@ out.dynamics.NoD <- PPdorm.energetic.patch(in.matrix = time.dynamics, timesteps 
 
 
 # Plot the temporal dynamics
-png("./figures/EnergyMod_two-patch_Dynamics.png", width = 1200, height = 1000, res = 2*96)
+png("./figures/PPdorm_two-patch_Dynamics.png", width = 1200, height = 1000, res = 2*96)
 par(mfcol = c(2,2))
 par(mar = c(2,5,3,1))
 
@@ -190,5 +190,5 @@ mtext(side = 1, "Timestep", line = 3, cex = 1.5)
 
 dev.off()
 graphics.off()
-img <- png::readPNG("./figures/EnergyMod_two-patch_Dynamics.png")
+img <- png::readPNG("./figures/PPdorm_two-patch_Dynamics.png")
 grid.raster(img)

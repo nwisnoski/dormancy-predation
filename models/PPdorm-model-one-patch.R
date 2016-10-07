@@ -11,7 +11,7 @@ require(png)
 require(grid)
 
 # initialize model parameters:
-timesteps = 10000
+timesteps = 1000
 
 
 # set initial densities
@@ -21,7 +21,7 @@ P0 = .1
 R0 = 1
 
 # set habitat quality
-Q = .001              # mean resource renewal rate
+Q = .01              # mean resource renewal rate
 a = 0*Q                # amplitude of fluctuation in resource inflow
 w = .001             # periodicity of flucutations
 l = 0.00         # loss rate of resource in patch
