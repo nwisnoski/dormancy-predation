@@ -11,7 +11,7 @@ require(png)
 require(grid)
 
 # initialize model parameters:
-timesteps = 1000
+timesteps = 10000
 
 
 # set initial densities
@@ -21,7 +21,7 @@ P0 = .1
 R0 = 1
 
 # set habitat quality
-Q = .01              # mean resource renewal rate
+Q = .07              # mean resource renewal rate
 a = 0*Q                # amplitude of fluctuation in resource inflow
 w = .001             # periodicity of flucutations
 l = 0.00         # loss rate of resource in patch
@@ -35,7 +35,7 @@ e.r = .8          # conversion rate on resource
 e.a = .4            # conversion rate on active prey
 e.d = .0            # conversion rate on dormant prey (0 = inedible)
 f.a = .6           # feeding rate of predators on active prey
-f.d = .001        # feeding rate of predators on dormant prey
+f.d = .006        # feeding rate of predators on dormant prey
 m.d = 0.001        # death rate of dormant prey
 m.a = 0.01           # death rate of active prey
 m.p = 0.05          # predator death rate
@@ -141,3 +141,47 @@ dev.off()
 graphics.off()
 img <- png::readPNG("./figures/PPdorm_one-patch_Dynamics.png")
 grid.raster(img)
+
+mean(out.dynamics.D[500:timesteps,2])
+mean(out.dynamics.D[500:timesteps,4])
+mean(out.dynamics.NoD[500:timesteps,2])
+mean(out.dynamics.NoD[500:timesteps,4])
+
+
+min.q <- 0.001; max.q <- .5; by.q <- 0.001
+param.list <- seq(min.q, max.q, by.q)
+param.sweep <- matrix(data = 0, nrow = length(param.list), ncol = 5)
+colnames(param.sweep) <- c("Q", "CV.D.A", "CV.D.P", "CV.NoD.A", "CV.NoD.P")
+for(i in 1:length(param.list)){
+  time.dynamics <- matrix(data = NA, nrow = timesteps, ncol = 5)
+  colnames(time.dynamics) <- c("t", "A", "D", "P", "R")
+  time.dynamics[1, ] <- c(1, A0, D0, P0, R0)
+  Q <- param.list[i]
+  # Run the model with and without dormancy
+  out.dynamics.D <- PPdorm.energetic(in.matrix = time.dynamics, timesteps = timesteps, dormancy = T)
+  out.dynamics.NoD <- PPdorm.energetic(in.matrix = time.dynamics, timesteps = timesteps, dormancy = F)
+  
+  param.sweep[i,1] <- Q
+  param.sweep[i,2] <- mean(out.dynamics.D[500:timesteps,2])
+  param.sweep[i,3] <- mean(out.dynamics.D[500:timesteps,4])
+  param.sweep[i,4] <- mean(out.dynamics.NoD[500:timesteps,2])
+  param.sweep[i,5] <- mean(out.dynamics.NoD[500:timesteps,4])
+  
+}
+
+plot(param.sweep[,1], param.sweep[,2], type = "l", col = "black", lwd = 2,
+     ylim = c(0, max(param.sweep[,c(2,4)])), yaxt = "n",
+     ylab = "Stability, 1/CV", xlab = "Resource Inputs")
+points(param.sweep[,1], param.sweep[,4], type = "l", col = "black", lty = "dashed", lwd = 2)
+axis(side = 1, lwd.ticks = 2)
+axis(side = 2, lwd.ticks = 2, las = 1)
+box(lwd = 2)
+
+plot(param.sweep[,1], param.sweep[,3], type = "l", col = "red", lwd = 2,
+     ylim = c(0, max(param.sweep[,c(3,5)])), yaxt = "n",
+     ylab = "Stability, 1/CV", xlab = "Resource Inputs")
+points(param.sweep[,1], param.sweep[,5], type = "l", col = "red", lty = "dashed", lwd = 2)
+axis(side = 1, lwd.ticks = 2)
+axis(side = 2, lwd.ticks = 2, las = 1)
+box(lwd = 2)
+
