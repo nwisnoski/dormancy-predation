@@ -142,13 +142,13 @@ graphics.off()
 img <- png::readPNG("./figures/PPdorm_one-patch_Dynamics.png")
 grid.raster(img)
 
-mean(out.dynamics.D[500:timesteps,2])
-mean(out.dynamics.D[500:timesteps,4])
-mean(out.dynamics.NoD[500:timesteps,2])
-mean(out.dynamics.NoD[500:timesteps,4])
+mean(out.dynamics.D[500:timesteps,2])/sd(out.dynamics.D[500:timesteps,2])
+mean(out.dynamics.D[500:timesteps,4])/sd(out.dynamics.D[500:timesteps,4])
+mean(out.dynamics.NoD[500:timesteps,2])/sd(out.dynamics.NoD[500:timesteps,2])
+mean(out.dynamics.NoD[500:timesteps,4])/sd(out.dynamics.NoD[500:timesteps,4])
 
 
-min.q <- 0.001; max.q <- .5; by.q <- 0.001
+min.q <- 0.000; max.q <- .5; by.q <- 0.001
 param.list <- seq(min.q, max.q, by.q)
 param.sweep <- matrix(data = 0, nrow = length(param.list), ncol = 5)
 colnames(param.sweep) <- c("Q", "CV.D.A", "CV.D.P", "CV.NoD.A", "CV.NoD.P")
@@ -162,10 +162,10 @@ for(i in 1:length(param.list)){
   out.dynamics.NoD <- PPdorm.energetic(in.matrix = time.dynamics, timesteps = timesteps, dormancy = F)
   
   param.sweep[i,1] <- Q
-  param.sweep[i,2] <- mean(out.dynamics.D[500:timesteps,2])
-  param.sweep[i,3] <- mean(out.dynamics.D[500:timesteps,4])
-  param.sweep[i,4] <- mean(out.dynamics.NoD[500:timesteps,2])
-  param.sweep[i,5] <- mean(out.dynamics.NoD[500:timesteps,4])
+  param.sweep[i,2] <- mean(out.dynamics.D[500:timesteps,2])/sd(out.dynamics.D[500:timesteps,2])
+  param.sweep[i,3] <- mean(out.dynamics.D[500:timesteps,4])/sd(out.dynamics.D[500:timesteps,4])
+  param.sweep[i,4] <- mean(out.dynamics.NoD[500:timesteps,2])/sd(out.dynamics.NoD[500:timesteps,2])
+  param.sweep[i,5] <- mean(out.dynamics.NoD[500:timesteps,4])/mean(out.dynamics.NoD[500:timesteps,4])
   
 }
 
@@ -177,7 +177,8 @@ points(param.sweep[,1], param.sweep[,4], type = "l", col = "black", lty = "dashe
 axis(side = 1, lwd.ticks = 2)
 axis(side = 2, lwd.ticks = 2, las = 1)
 box(lwd = 2)
-legend(x = "topright", legend = c("With dormancy", "Without dormancy"), lwd = 2, lty = c("solid", "dashed"))
+legend(x = "topright", legend = c("With dormancy", "Without dormancy"), lwd = 2, lty = c("solid", "dashed"),
+       bty = "n")
 dev.off()
 
 png("./figures/StabilityDorm.png", height = 1200, width = 1200, res = 192)
@@ -189,5 +190,5 @@ axis(side = 1, lwd.ticks = 2)
 axis(side = 2, lwd.ticks = 2, las = 1)
 box(lwd = 2)
 legend(x = "topright", legend = c("With dormancy", "Without dormancy"), lwd = 2, lty = c("solid", "dashed"),
-       col = "red")
+       col = "red", bty = "n")
 dev.off()
