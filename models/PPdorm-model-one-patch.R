@@ -169,6 +169,7 @@ for(i in 1:length(param.list)){
   
 }
 
+png("./figures/StabilityPrey.png", height = 1200, width = 1200, res = 192)
 plot(param.sweep[,1], param.sweep[,2], type = "l", col = "black", lwd = 2,
      ylim = c(0, max(param.sweep[,c(2,4)])), yaxt = "n",
      ylab = "Stability, 1/CV", xlab = "Resource Inputs")
@@ -176,7 +177,9 @@ points(param.sweep[,1], param.sweep[,4], type = "l", col = "black", lty = "dashe
 axis(side = 1, lwd.ticks = 2)
 axis(side = 2, lwd.ticks = 2, las = 1)
 box(lwd = 2)
+dev.off()
 
+png("./figures/StabilityDorm.png", height = 1200, width = 1200, res = 192)
 plot(param.sweep[,1], param.sweep[,3], type = "l", col = "red", lwd = 2,
      ylim = c(0, max(param.sweep[,c(3,5)])), yaxt = "n",
      ylab = "Stability, 1/CV", xlab = "Resource Inputs")
@@ -184,4 +187,4 @@ points(param.sweep[,1], param.sweep[,5], type = "l", col = "red", lty = "dashed"
 axis(side = 1, lwd.ticks = 2)
 axis(side = 2, lwd.ticks = 2, las = 1)
 box(lwd = 2)
-
+dev.off()
