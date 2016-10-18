@@ -107,12 +107,3 @@ grid::grid.raster(png::readPNG("./figures/StabDiff.png"))
 
 
 
-plot(param.sweep[,1], 
-     (1 * (param.sweep[,2] > 0) * (param.sweep[,6] > 0)),
-     col = "black", lwd = 2,
-     yaxt = "n", xaxt = "n", 
-     ylab = "Pred-Prey Persistence", xlab = "Resource Inputs", cex.lab = 1.5)
-points(param.sweep[,1], (1 * (param.sweep[,8] > 0) * (param.sweep[,10] > 0)), col = "red")
-axis(side = 1, lwd.ticks = 2, cex = 1.2)
-axis(side = 2, lwd.ticks = 2, cex = 1.2, labels = c("Persistence", "Extinction"), at = c(1, 0))
-box(lwd = 2)
