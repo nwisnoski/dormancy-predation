@@ -171,7 +171,7 @@ for(i in 1:length(param.list)){
 
 png("./figures/StabilityPrey.png", height = 1200, width = 1200, res = 192)
 plot(param.sweep[,1], param.sweep[,2], type = "l", col = "black", lwd = 2,
-     ylim = c(0, max(param.sweep[,c(2,4)])), yaxt = "n",
+     ylim = c(0, max(na.omit(param.sweep[,c(2,4)]))), yaxt = "n",
      ylab = "Stability, 1/CV", xlab = "Resource Inputs")
 points(param.sweep[,1], param.sweep[,4], type = "l", col = "black", lty = "dashed", lwd = 2)
 axis(side = 1, lwd.ticks = 2)
@@ -180,10 +180,11 @@ box(lwd = 2)
 legend(x = "topright", legend = c("With dormancy", "Without dormancy"), lwd = 2, lty = c("solid", "dashed"),
        bty = "n")
 dev.off()
+grid::grid.raster(png::readPNG("./figures/StabilityPrey.png"))
 
-png("./figures/StabilityDorm.png", height = 1200, width = 1200, res = 192)
+png("./figures/StabilityPred.png", height = 1200, width = 1200, res = 192)
 plot(param.sweep[,1], param.sweep[,3], type = "l", col = "red", lwd = 2,
-     ylim = c(0, max(param.sweep[,c(3,5)])), yaxt = "n",
+     ylim = c(0, max(na.omit(param.sweep[,c(3,5)]))), yaxt = "n",
      ylab = "Stability, 1/CV", xlab = "Resource Inputs")
 points(param.sweep[,1], param.sweep[,5], type = "l", col = "red", lty = "dashed", lwd = 2)
 axis(side = 1, lwd.ticks = 2)
@@ -192,3 +193,4 @@ box(lwd = 2)
 legend(x = "topright", legend = c("With dormancy", "Without dormancy"), lwd = 2, lty = c("solid", "dashed"),
        col = "red", bty = "n")
 dev.off()
+grid::grid.raster(png::readPNG("./figures/StabilityPred.png"))
