@@ -39,7 +39,7 @@ f.d = .006        # feeding rate of predators on dormant prey
 m.d = 0.001        # death rate of dormant prey
 m.a = 0.01           # death rate of active prey
 m.p = 0.05          # predator death rate
-a.ii = 0.05       # strength of intraspecific competition
+a.ii = 0.5       # strength of intraspecific competition
 
 
 
