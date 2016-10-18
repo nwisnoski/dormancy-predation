@@ -177,6 +177,7 @@ points(param.sweep[,1], param.sweep[,4], type = "l", col = "black", lty = "dashe
 axis(side = 1, lwd.ticks = 2)
 axis(side = 2, lwd.ticks = 2, las = 1)
 box(lwd = 2)
+legend(x = "topright", legend = c("With dormancy", "Without dormancy"), lwd = 2, lty = c("solid", "dashed"))
 dev.off()
 
 png("./figures/StabilityDorm.png", height = 1200, width = 1200, res = 192)
@@ -187,4 +188,6 @@ points(param.sweep[,1], param.sweep[,5], type = "l", col = "red", lty = "dashed"
 axis(side = 1, lwd.ticks = 2)
 axis(side = 2, lwd.ticks = 2, las = 1)
 box(lwd = 2)
+legend(x = "topright", legend = c("With dormancy", "Without dormancy"), lwd = 2, lty = c("solid", "dashed"),
+       col = "red")
 dev.off()
