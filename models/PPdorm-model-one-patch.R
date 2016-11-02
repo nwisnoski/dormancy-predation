@@ -46,7 +46,7 @@ a.ii = 0.5       # strength of intraspecific competition
 extinct.thresh = 0.00001
 
 # define model
-PPdorm.energetic <- function(in.matrix = "", timesteps = "", dormancy = ""){
+PPdorm.energetic <- function(in.matrix = "", timesteps = "", dormancy = "", stochastic = T){
   if(dormancy == F){
     dorm.max = 0
     react.max = 0
@@ -63,13 +63,13 @@ PPdorm.energetic <- function(in.matrix = "", timesteps = "", dormancy = ""){
     P <- in.matrix[i,4]
     R <- in.matrix[i,5]
     
-    dorm <- runif(1, max = dorm.max*exp(-R))
-    react <- runif(1, max = react.max*(1-exp(-R)))
+    dorm <- if(stochastic) runif(1, max = dorm.max*exp(-R)) else dorm.max*exp(-R)
+    react <- if(stochastic) runif(1, max = react.max*(1-exp(-R))) else react.max*(1-exp(-R))
     
     dR     <- Q + a*sin(w*i) - c*R*A - l*R
-    dA     <- e.r*c*R*A*(1-A*a.ii) - dorm*A + react*D - f.a*A*P - runif(1,max=m.a)*A
-    dD     <- dorm*A - react*D - f.d*D*P - runif(1,max=m.d)*D
-    dP     <- e.a*f.a*A*P + e.d*f.d*D*P - runif(1,max=m.p)*P
+    dA     <- e.r*c*R*A*(1-A*a.ii) - dorm*A + react*D - f.a*A*P - if(stochastic) runif(1,max=m.a)*A else m.a*A
+    dD     <- dorm*A - react*D - f.d*D*P - if(stochastic) runif(1,max=m.d)*D else m.d*D
+    dP     <- e.a*f.a*A*P + e.d*f.d*D*P - if(stochastic) runif(1,max=m.p)*P else m.p*P
     
     in.matrix[i+1, 1] <- i
     in.matrix[i+1, 2] <- max(((A + dA) > extinct.thresh)*(A+dA), 0) # return 0 if pop below thresh.
@@ -87,8 +87,8 @@ colnames(time.dynamics) <- c("t", "A", "D", "P", "R")
 time.dynamics[1, ] <- c(1, A0, D0, P0, R0)
 
 # Run the model with and without dormancy
-out.dynamics.D <- PPdorm.energetic(in.matrix = time.dynamics, timesteps = timesteps, dormancy = T)
-out.dynamics.NoD <- PPdorm.energetic(in.matrix = time.dynamics, timesteps = timesteps, dormancy = F)
+out.dynamics.D <- PPdorm.energetic(in.matrix = time.dynamics, timesteps = timesteps, dormancy = T, stochastic = F)
+out.dynamics.NoD <- PPdorm.energetic(in.matrix = time.dynamics, timesteps = timesteps, dormancy = F, stochastic = F)
 
 
 # Plot the temporal dynamics
