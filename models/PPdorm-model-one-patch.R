@@ -35,11 +35,11 @@ e.r = .8          # conversion rate on resource
 e.a = .4            # conversion rate on active prey
 e.d = .0            # conversion rate on dormant prey (0 = inedible)
 f.a = .6           # feeding rate of predators on active prey
-f.d = .006        # feeding rate of predators on dormant prey
+f.d = .0        # feeding rate of predators on dormant prey
 m.d = 0.001        # death rate of dormant prey
 m.a = 0.01           # death rate of active prey
 m.p = 0.05          # predator death rate
-a.ii = 0.5       # strength of intraspecific competition
+a.ii = .05       # strength of intraspecific competition
 
 
 

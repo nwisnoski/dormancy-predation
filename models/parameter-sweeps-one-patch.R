@@ -1,7 +1,7 @@
 source("./models/PPdorm-model-one-patch.R")
 
 param <- "Q"
-min.par <- 0.001; max.par <- 1; by.par <- 0.001
+min.par <- 0.001; max.par <- 1; by.par <- 0.01
 param.list <- seq(min.par, max.par, by.par)
 param.sweep <- matrix(data = 0, nrow = length(param.list), ncol = 11)
 colnames(param.sweep) <- c(param, "mean.D.A", "sd.D.A", "mean.D.D", "sd.D.D", "mean.D.P", "sd.D.P",
@@ -32,11 +32,12 @@ for(i in 1:length(param.list)){
 }
 
 ### Equilibrium Densities
-png("./figures/OnePatchEquilDensities.png", width = 1200, height = 1000, res = 2*96)
+png(paste("./figures/OnePatchEquilDensities_",param,".png",sep = ""), width = 1200, height = 1000, res = 2*96)
 par(mfrow = c(2,1))
 par(mar = c(2,5,3,3))
 plot(param.sweep[,1], param.sweep[,6], type = "l", col = "red", lwd = 2,
-     yaxt = "n", xaxt = "n", ylab = "", xlab = "")
+     yaxt = "n", xaxt = "n", ylab = "", xlab = "",
+     ylim = c(0, max(param.sweep[,c(6,4,2)])))
 points(param.sweep[,1], param.sweep[,4], type = "l", col = "green", lwd = 2)
 points(param.sweep[,1], param.sweep[,2], type = "l", col = "blue", lwd = 2)
 axis(side = 1, lwd.ticks = 2, cex.axis = 1.2, las = 1, labels = F)
@@ -49,7 +50,8 @@ mtext(side = 2, "Equilibrium Density\n(With Dormancy)", line = 2.75, cex = 1.2)
 par(mar = c(5,5,0,3))
 plot(param.sweep[,1], param.sweep[,10], type = "l", col = "red", lwd = 2,
      yaxt = "n", xaxt = "n",
-     ylab = "", xlab = "", cex.lab = 1.5)
+     ylab = "", xlab = "", cex.lab = 1.5,
+     ylim = c(0, max(param.sweep[,c(10,8)])))
 points(param.sweep[,1], param.sweep[,8], type = "l", col = "blue", lwd = 2)
 axis(side = 1, lwd.ticks = 2, cex.axis = 1.2, las = 1)
 axis(side = 2, lwd.ticks = 2, cex.axis = 1.2, las = 1)
@@ -57,13 +59,13 @@ axis(side = 3, lwd.ticks = 2, cex.axis = 1.2, las = 1, labels = F)
 axis(side = 4, lwd.ticks = 2, cex.axis = 1.2, las = 1, labels = F)
 box(lwd = 2)
 mtext(side = 2, "Equilibrium Density\n(No Dormancy)", line = 2.75, cex = 1.2)
-mtext(side = 1, "Resource Inputs", line = 3, cex = 1.5)
+mtext(side = 1, param, line = 3, cex = 1.5)
 legend("topright", c("Active", "Dormant", "Predators"),
        lty = c("solid", "solid", "solid"),
        col = c("blue", "green", "red"), cex = 1, bty = "n")
 
 dev.off()
-grid::grid.raster(png::readPNG("./figures/OnePatchEquilDensities.png"))
+grid::grid.raster(png::readPNG(paste("./figures/OnePatchEquilDensities_",param,".png",sep = "")))
 
 
 # png("./figures/StabilityPrey.png", height = 1200, width = 1200, res = 192)
