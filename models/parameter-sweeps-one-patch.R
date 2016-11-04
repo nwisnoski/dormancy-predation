@@ -32,7 +32,8 @@ for(i in 1:length(param.list)){
 }
 
 ### Equilibrium Densities
-png(paste("./figures/OnePatchEquilDensities_",param,".png",sep = ""), width = 1200, height = 1000, res = 2*96)
+png(paste("./figures/OnePatchEquilDensities_",param,"fd",f.d,
+          "ed",e.d,".png",sep = ""), width = 1200, height = 1000, res = 2*96)
 par(mfrow = c(2,1))
 par(mar = c(2,5,3,3))
 plot(param.sweep[,1], param.sweep[,6], type = "l", col = "red", lwd = 2,
@@ -148,4 +149,20 @@ grid::grid.raster(png::readPNG(paste("./figures/OnePatchEquilDensities_",param,"
 
 
 
+### Stable/unstable parameters (with dormancy)
+stab.dorm <- param.sweep[which(param.sweep[,2] > 0 & param.sweep[,4] > 0 & param.sweep[,6] > 0),1]
+unstab.dorm <- param.sweep[which((param.sweep[,2] == 0 & param.sweep[,4] == 0) | param.sweep[,6] == 0),1]
+stab.mat.dorm <- rbind(
+  cbind(stab.dorm, rep(1, length(stab.dorm))),
+  cbind(unstab.dorm, rep(0, length(unstab.dorm))))
+
+### Stable/unstable parameters (without dormancy)
+stab.nodorm <- param.sweep[which(param.sweep[,8] > 0 & param.sweep[,10] > 0),1]
+unstab.nodorm <- param.sweep[which(param.sweep[,8] == 0 | param.sweep[,10] == 0),1]
+stab.mat.nodorm <- rbind(
+  cbind(stab.nodorm, rep(1, length(stab.nodorm))),
+  cbind(unstab.nodorm, rep(0, length(unstab.nodorm))))
+
+
+plot(stab.mat.nodorm)
 
