@@ -21,7 +21,7 @@ P0 = .1
 R0 = 1
 
 # set habitat quality
-Q = .07              # mean resource renewal rate
+Q = .2              # mean resource renewal rate
 a = 0*Q                # amplitude of fluctuation in resource inflow
 w = .001             # periodicity of flucutations
 l = 0.00         # loss rate of resource in patch
@@ -36,7 +36,7 @@ e.a = .4            # conversion rate on active prey
 e.d = .01            # conversion rate on dormant prey (0 = inedible)
 f.a = .6           # feeding rate of predators on active prey
 f.d = .6        # feeding rate of predators on dormant prey
-m.d = 0.001        # death rate of dormant prey
+m.d = 0.0001        # death rate of dormant prey
 m.a = 0.01           # death rate of active prey
 m.p = 0.05          # predator death rate
 a.ii = .05       # strength of intraspecific competition

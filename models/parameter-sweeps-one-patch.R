@@ -1,7 +1,7 @@
 source("./models/PPdorm-model-one-patch.R")
 
-param <- "f.a"
-min.par <- 0.001; max.par <- 1; by.par <- 0.05
+param <- "e.d"
+min.par <- 0.001; max.par <- 1; by.par <- 0.01
 param.list <- seq(min.par, max.par, by.par)
 param2 <- "f.d"
 param2.list <- seq(min.par, max.par, by.par)
@@ -83,6 +83,7 @@ legend("topright", c("Active", "Dormant", "Predators"),
        col = c("blue", "green", "red"), cex = 1, bty = "n")
 
 dev.off()
+graphics.off()
 grid::grid.raster(
   png::readPNG(paste("./figures/OnePatchEquilDensities_",param,eval(as.name(param)),
                      param2,eval(as.name(param2)),".png",sep = "")))
@@ -111,8 +112,8 @@ png(paste("./figures/StabPlot_nodorm_",param,eval(as.name(param)),
           param2,eval(as.name(param2)),".png",sep = ""), 
     width = 1200, height = 1000, res = 192)
 plot.new()
-points(stab.nodorm[,1], stab.nodorm[,2], pch = 22, bg = "black")
-points(unstab.nodorm[,1], unstab.nodorm[,2], pch = 22, bg = "white")
+points(stab.nodorm[,1], stab.nodorm[,2], pch = 21, bg = "black", cex = 0.5)
+#points(unstab.nodorm[,1], unstab.nodorm[,2], pch = 21, bg = "white", cex = 0.5)
 box(lwd = 2)
 axis(side = 1, labels = T, las = 1, lwd.ticks = 2, cex.axis = 1)
 axis(side = 2, labels = T, las = 1, lwd.ticks = 2, cex.axis = 1)
@@ -131,8 +132,8 @@ png(paste("./figures/StabPlot_dorm_",param,eval(as.name(param)),
           param2,eval(as.name(param2)),".png",sep = ""), 
     width = 1200, height = 1000, res = 192)
 plot.new()
-points(stab.dorm[,1], stab.dorm[,2], pch = 21, bg = "black")
-points(unstab.dorm[,1], unstab.dorm[,2], pch = 21, bg = "white")
+points(stab.dorm[,1], stab.dorm[,2], pch = 21, bg = "black", cex = 0.5)
+#points(unstab.dorm[,1], unstab.dorm[,2], pch = 21, bg = "white", cex = 0.5)
 box(lwd = 2)
 axis(side = 1, labels = T, las = 1, lwd.ticks = 2, cex.axis = 1)
 axis(side = 2, labels = T, las = 1, lwd.ticks = 2, cex.axis = 1)
