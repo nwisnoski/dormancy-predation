@@ -1,0 +1,31 @@
+---
+title: "Prey dormancy model"
+output:
+  pdf_document: default
+  html_notebook: default
+---
+
+
+$$
+\frac{dR}{dt} = Q + \alpha sin(\omega t) - cRA - lR \\
+$$
+
+$$
+\frac{dA}{dt} = e_rcRA (1-\alpha_{ii}A) - \delta (R) A + \rho (R) D - f_aAP - m_a \\
+$$
+
+$$
+\frac{dD}{dt} = \delta (R) A - \rho (R)D - f_dDP - m_dD \\
+$$
+
+$$
+\frac{dP}{dt} = e_af_aAP + e_df_dDP - m_pP \\
+$$
+
+$$
+\delta(R) = \delta_{max} \exp(-R) 
+$$
+
+$$
+\rho(R) = \rho_{max} (1-exp(-R))
+$$

@@ -11,7 +11,7 @@ require(png)
 require(grid)
 
 # initialize model parameters:
-timesteps = 10000
+timesteps = 1000
 
 
 # set initial densities
@@ -33,9 +33,9 @@ dorm.max = .5    # maximum dormancy rate /step
 react.max = .4    # maximum reactivation rate /step
 e.r = .8          # conversion rate on resource
 e.a = .4            # conversion rate on active prey
-e.d = .0            # conversion rate on dormant prey (0 = inedible)
+e.d = .01            # conversion rate on dormant prey (0 = inedible)
 f.a = .6           # feeding rate of predators on active prey
-f.d = .0        # feeding rate of predators on dormant prey
+f.d = .6        # feeding rate of predators on dormant prey
 m.d = 0.001        # death rate of dormant prey
 m.a = 0.01           # death rate of active prey
 m.p = 0.05          # predator death rate
