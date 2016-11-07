@@ -26,9 +26,9 @@ R20 = 1
 
 # Set patch quality
 Q1 = .2              # mean resource renewal rate patch 1
-Q2 = .2              # "" patch 2
-a1 = 0.*Q1                # amplitude of fluctuation in resource inflow patch 1
-a2 = 0.*Q2             # amplitude patch 2
+Q2 = .2            # "" patch 2
+a1 = 0.0*Q1                # amplitude of fluctuation in resource inflow patch 1
+a2 = 0.0*Q2             # amplitude patch 2
 w1 = 0.001             # periodicity of flucutations in patch 1
 w2 = 0.001           # periodicity in patch 2
 l1 = 0.00         # loss rate of resource in patch 1
@@ -47,9 +47,9 @@ m.d = 0.0001        # death rate of dormant prey
 m.a = 0.01           # death rate of active prey
 m.p = 0.05          # predator death rate
 a.ii = 0.05       # strength of intraspecific competition
-d.a = 0.     # active dispersal
-d.d = 0.     # dormant dispersal
-d.p = 0.     # predator dispersal
+d.a = 0.0     # active dispersal
+d.d = 0.0     # dormant dispersal
+d.p = 0.0     # predator dispersal
 
 
 extinct.thresh = 0.00001

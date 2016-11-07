@@ -1,7 +1,7 @@
 source("./models/PPdorm-model-one-patch.R")
 
 param <- "Q"
-min.par <- 0.001; max.par <- 5; by.par <- 0.01
+min.par <- 0.001; max.par <- 1; by.par <- 0.01
 param.list <- seq(min.par, max.par, by.par)
 param.sweep <- matrix(data = 0, nrow = length(param.list), ncol = 11)
 colnames(param.sweep) <- c(param, "mean.D.A", "sd.D.A", "mean.D.D", "sd.D.D", "mean.D.P", "sd.D.P",
@@ -67,6 +67,4 @@ legend("topright", c("Active", "Dormant", "Predators"),
        col = c("blue", "green", "red"), cex = 1, bty = "n")
 
 dev.off()
-grid::grid.raster(
-  png::readPNG(paste("./figures/OnePatchEquilDensities_",param,"fd",f.d,
-                     "ed",e.d,".png",sep = "")))
+grid::grid.raster(png::readPNG(paste("./figures/OnePatchEquilDensities_",param,"fd",f.d,".png",sep = "")))

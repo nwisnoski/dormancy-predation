@@ -1,7 +1,7 @@
 source("./models/PPdorm-model-two-patch.R")
 
 param <- "d.a"
-min.par <- 0.001; max.par <- 1; by.par <- 0.1
+min.par <- 0.001; max.par <- 1; by.par <- 0.01
 param.list <- seq(min.par, max.par, by.par)
 param2 <- "d.d"
 param2.list <- seq(min.par, max.par, by.par)
@@ -62,47 +62,6 @@ for(i in 1:length(param.list)){
   }
   
 }
-
-### Equilibrium Densities
-png(paste("./figures/TwoPatchEquilDensities_",param,eval(as.name(param)),
-          param2,eval(as.name(param2)),".png",sep = ""),
-    width = 1200, height = 1000, res = 2*96)
-par(mfrow = c(2,1))
-par(mar = c(2,5,3,3))
-plot(param.sweep[,1], param.sweep[,4], type = "l", col = "red", lwd = 2,
-     yaxt = "n", xaxt = "n", ylab = "", xlab = "",
-     ylim = c(0, max(param.sweep[,c(3,5,7,13,15,17)])))
-points(param.sweep[,1], param.sweep[,4], type = "l", col = "green", lwd = 2)
-points(param.sweep[,1], param.sweep[,2], type = "l", col = "blue", lwd = 2)
-axis(side = 1, lwd.ticks = 2, cex.axis = 1.2, las = 1, labels = F)
-axis(side = 2, lwd.ticks = 2, cex.axis = 1.2, las = 1)
-axis(side = 3, lwd.ticks = 2, cex.axis = 1.2, las = 1, labels = F)
-axis(side = 4, lwd.ticks = 2, cex.axis = 1.2, las = 1, labels = F)
-box(lwd = 2)
-mtext(side = 2, "Equilibrium Density\n(With Dormancy)", line = 2.75, cex = 1.2)
-
-par(mar = c(5,5,0,3))
-plot(param.sweep[,1], param.sweep[,10], type = "l", col = "red", lwd = 2,
-     yaxt = "n", xaxt = "n",
-     ylab = "", xlab = "", cex.lab = 1.5,
-     ylim = c(0, max(param.sweep[,c(10,8)])))
-points(param.sweep[,1], param.sweep[,8], type = "l", col = "blue", lwd = 2)
-axis(side = 1, lwd.ticks = 2, cex.axis = 1.2, las = 1)
-axis(side = 2, lwd.ticks = 2, cex.axis = 1.2, las = 1)
-axis(side = 3, lwd.ticks = 2, cex.axis = 1.2, las = 1, labels = F)
-axis(side = 4, lwd.ticks = 2, cex.axis = 1.2, las = 1, labels = F)
-box(lwd = 2)
-mtext(side = 2, "Equilibrium Density\n(No Dormancy)", line = 2.75, cex = 1.2)
-mtext(side = 1, param, line = 3, cex = 1.5)
-legend("topright", c("Active", "Dormant", "Predators"),
-       lty = c("solid", "solid", "solid"),
-       col = c("blue", "green", "red"), cex = 1, bty = "n")
-
-dev.off()
-graphics.off()
-grid::grid.raster(
-  png::readPNG(paste("./figures/OnePatchEquilDensities_",param,eval(as.name(param)),
-                     param2,eval(as.name(param2)),".png",sep = "")))
 
 
 ### Stable/unstable parameters (with dormancy)
@@ -167,86 +126,6 @@ graphics.off()
 grid::grid.raster(
   png::readPNG(paste("./figures/TwoPatchStabPlot_dorm_",param,eval(as.name(param)),
                      param2,eval(as.name(param2)),".png",sep = "")))
-
-
-
-
-# png("./figures/StabilityPrey.png", height = 1200, width = 1200, res = 192)
-# plot(param.sweep[,1], param.sweep[,2]/param.sweep[,3], type = "l", col = "black", lwd = 2,
-#      ylim = c(0, 15), yaxt = "n", xaxt = "n",
-#      ylab = "Stability, 1/CV", xlab = "Resource Inputs", cex.lab = 1.5)
-# points(param.sweep[,1], param.sweep[,8]/param.sweep[,9], type = "l", col = "black", lty = "dashed", lwd = 2)
-# axis(side = 1, lwd.ticks = 2, cex = 1.2)
-# axis(side = 2, lwd.ticks = 2, las = 1, cex = 1.2)
-# box(lwd = 2)
-# legend(x = "topright", legend = c("With dormancy", "Without dormancy"), lwd = 2, lty = c("solid", "dashed"),
-#        bty = "n")
-# dev.off()
-# grid::grid.raster(png::readPNG("./figures/StabilityPrey.png"))
-# 
-# png("./figures/StabilityPred.png", height = 1200, width = 1200, res = 192)
-# plot(param.sweep[,1], param.sweep[,6]/param.sweep[,7], type = "l", col = "red", lwd = 2,
-#      ylim = c(0, 20), yaxt = "n", xaxt = "n",
-#      ylab = "Stability, 1/CV", xlab = "Resource Inputs", cex.lab = 1.5)
-# points(param.sweep[,1], param.sweep[,10]/param.sweep[,11], type = "l", col = "red", lty = "dashed", lwd = 2)
-# axis(side = 1, lwd.ticks = 2, cex.lab = 1.2)
-# axis(side = 2, lwd.ticks = 2, las = 1, cex.lab = 1.2)
-# box(lwd = 2)
-# legend(x = "topright", legend = c("With dormancy", "Without dormancy"), lwd = 2, lty = c("solid", "dashed"),
-#        col = "red", bty = "n")
-# dev.off()
-# grid::grid.raster(png::readPNG("./figures/StabilityPred.png"))
-# 
-# 
-# png("./figures/StabDiffPrey.png", height = 1200, width = 1200, res = 192)
-# plot(param.sweep[,1], param.sweep[,2]/param.sweep[,3] - param.sweep[,8]/param.sweep[,9], type = "l", col = "black", lwd = 2,
-#      yaxt = "n", xaxt = "n", main = "Prey Stability",
-#      ylab = "Effect on Stability", xlab = "Resource Inputs", cex.lab = 1.5)
-# abline(h = 0, lwd = 2, lty = "dotted")
-# axis(side = 1, lwd.ticks = 2, cex = 1.2)
-# axis(side = 2, lwd.ticks = 2, las = 1, cex = 1.2)
-# box(lwd = 2)
-# legend(x = "bottomright", legend = c("With dormancy", "Without dormancy"), lwd = 2, lty = c("solid", "dashed"),
-#        bty = "n")
-# dev.off()
-# grid::grid.raster(png::readPNG("./figures/StabDiffPrey.png"))
-# 
-# png("./figures/StabDiffPred.png", height = 1200, width = 1200, res = 192)
-# plot(param.sweep[,1], param.sweep[,6]/param.sweep[,7] - param.sweep[,10]/param.sweep[,11], type = "l", col = "red", lwd = 2,
-#      yaxt = "n", xaxt = "n", main = "Predator Stability",
-#      ylab = "Effect on Stability", xlab = "Resource Inputs", cex.lab = 1.5)
-# abline(h = 0, lwd = 2, lty = "dotted")
-# axis(side = 1, lwd.ticks = 2, cex.lab = 1.2)
-# axis(side = 2, lwd.ticks = 2, las = 1, cex.lab = 1.2)
-# box(lwd = 2)
-# legend(x = "bottomright", legend = c("With dormancy", "Without dormancy"), lwd = 2, lty = c("solid", "dashed"),
-#        col = "red", bty = "n")
-# dev.off()
-# grid::grid.raster(png::readPNG("./figures/StabDiffPred.png"))
-# 
-# png("./figures/StabDiff.png", height = 1200, width = 1200, res = 192)
-# plot(param.sweep[,1], param.sweep[,2]/param.sweep[,3] - param.sweep[,8]/param.sweep[,9], type = "l", col = "black", lwd = 2,
-#      yaxt = "n", xaxt = "n", 
-#      ylim = c(
-#        min(
-#         min(na.omit(param.sweep[,2]/param.sweep[,3] - param.sweep[,8]/param.sweep[,9])),
-#         min(na.omit(param.sweep[,6]/param.sweep[,7] - param.sweep[,10]/param.sweep[,11]))
-#         ),
-#        max(
-#          max(na.omit(param.sweep[,2]/param.sweep[,3] - param.sweep[,8]/param.sweep[,9])),
-#          max(na.omit(param.sweep[,6]/param.sweep[,7] - param.sweep[,10]/param.sweep[,11]))
-#          )
-#        ),
-#      ylab = "Effect on Stability", xlab = "Resource Inputs", cex.lab = 1.5)
-# abline(h = 0, lwd = 2, lty = "dotted")
-# points(param.sweep[,1], param.sweep[,6]/param.sweep[,7] - param.sweep[,10]/param.sweep[,11], type = "l", col = "red", lwd = 2)
-# axis(side = 1, lwd.ticks = 2, cex = 1.2)
-# axis(side = 2, lwd.ticks = 2, las = 1, cex = 1.2)
-# box(lwd = 2)
-# legend(x = "bottomright", legend = c("Prey", "Predator"), lwd = 2, lty = c("solid", "solid"),
-#        col = c("black", "red"), bty = "n")
-# dev.off()
-# grid::grid.raster(png::readPNG("./figures/StabDiff.png"))
 
 
 

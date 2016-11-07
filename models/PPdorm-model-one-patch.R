@@ -17,7 +17,7 @@ timesteps = 1000
 # set initial densities
 A0 = .1
 D0 = 0
-P0 = .1
+P0 = .0
 R0 = 1
 
 # set habitat quality
@@ -44,6 +44,10 @@ a.ii = .05       # strength of intraspecific competition
 
 
 extinct.thresh = 0.00001
+
+parameter.list <- list(timesteps, A0, D0, P0, R0,
+                       Q,a,w,l,c,dorm.max,react.max,
+                       e.r,e.a,e.d,f.a,f.d,m.d,m.a,m.p,a.ii,extinct.thresh)
 
 # define model
 PPdorm.energetic <- function(in.matrix = "", timesteps = "", dormancy = "", stochastic = T){
