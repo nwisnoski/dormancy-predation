@@ -25,8 +25,8 @@ P20 = .1
 R20 = 1
 
 # Set patch quality
-Q1 = .0              # mean resource renewal rate patch 1
-Q2 = .01              # "" patch 2
+Q1 = .2              # mean resource renewal rate patch 1
+Q2 = .2              # "" patch 2
 a1 = 0.*Q1                # amplitude of fluctuation in resource inflow patch 1
 a2 = 0.*Q2             # amplitude patch 2
 w1 = 0.001             # periodicity of flucutations in patch 1
@@ -40,22 +40,22 @@ dorm.max = .5    # maximum dormancy rate /step
 react.max = .4    # maximum reactivation rate /step
 e.r = .8          # conversion rate on resource
 e.a = .4            # conversion rate on active prey
-e.d = .0            # conversion rate on dormant prey (0 = inedible)
+e.d = .01            # conversion rate on dormant prey (0 = inedible)
 f.a = .6           # feeding rate of predators on active prey
-f.d = .001        # feeding rate of predators on dormant prey
-m.d = 0.001        # death rate of dormant prey
+f.d = .6        # feeding rate of predators on dormant prey
+m.d = 0.0001        # death rate of dormant prey
 m.a = 0.01           # death rate of active prey
 m.p = 0.05          # predator death rate
-a.ii = 0.01       # strength of intraspecific competition
-d.a = 0.1     # active dispersal
-d.d = 0.1     # dormant dispersal
-d.p = 0.1     # predator dispersal
+a.ii = 0.05       # strength of intraspecific competition
+d.a = 0.     # active dispersal
+d.d = 0.     # dormant dispersal
+d.p = 0.     # predator dispersal
 
 
 extinct.thresh = 0.00001
 
 # define model
-PPdorm.energetic.patch <- function(in.matrix = "", timesteps = "", dormancy = ""){
+PPdorm.energetic.patch <- function(in.matrix = "", timesteps = "", dormancy = "", stochastic = T){
   if(dormancy == F){
     dorm.max = 0
     react.max = 0
@@ -80,22 +80,34 @@ PPdorm.energetic.patch <- function(in.matrix = "", timesteps = "", dormancy = ""
     P2 <- as.numeric(in.matrix[i,8])
     R2 <- as.numeric(in.matrix[i,9])
    
-    dorm1 <- runif(1, max = dorm.max)
-    react1 <- runif(1, max = react.max)
-    dorm2 <- runif(1, max = dorm.max)
-    react2 <- runif(1, max = react.max)
-    disp.A <- runif(1, min = -d.a, max = d.a)
-    disp.D <- runif(1, min = -d.d, max = d.d)
-    disp.P <- runif(1, min = -d.p, max = d.p)
+    dorm1 <- if(stochastic) runif(1, max = dorm.max*exp(-R1)) else dorm.max*exp(-R1)
+    react1 <- if(stochastic) runif(1, max = react.max*(1-exp(-R1))) else react.max*(1-exp(-R1))
+    dorm2 <- if(stochastic) runif(1, max = dorm.max*exp(-R2)) else dorm.max*exp(-R2)
+    react2 <- if(stochastic) runif(1, max = react.max*(1-exp(-R2))) else react.max*(1-exp(-R2))
+    disp.A <- if(stochastic) runif(1, min = -d.a, max = d.a) else d.a
+    disp.D <- if(stochastic) runif(1, min = -d.d, max = d.d) else d.d
+    disp.P <- if(stochastic) runif(1, min = -d.p, max = d.p) else d.p
     
     dR1     <- Q1 + a1*sin(w1*i) - c*R1*A1 - l1*R1
-    dA1     <- e.r*c*R1*A1*(1-A1*a.ii) - dorm1*A1 + react1*D1 - f.a*A1*P1 - runif(1,max=m.a)*A1 + disp.A*(A1+A2)
-    dD1     <- dorm1*A1 - react1*D1 - f.d*D1*P1 - runif(1,max=m.d)*D1 + disp.D*(D1+D2)
-    dP1     <- e.a*f.a*A1*P1 + e.d*f.d*D1*P1 - runif(1,max=m.p)*P1 + disp.P*(P1+P2)
+    dA1     <- e.r*c*R1*A1*(1-A1*a.ii) - dorm1*A1 + react1*D1 - f.a*A1*P1 + 
+                  (if(stochastic) disp.A*(A1+A2) else disp.A*(A1-A2)) -
+                  (if(stochastic) runif(1,max=m.a)*A1 else m.a*A1)
+    dD1     <- dorm1*A1 - react1*D1 - f.d*D1*P1 +
+                  (if(stochastic) disp.D*(D1+D2) else disp.D*(D1-D2)) -
+                  (if(stochastic) runif(1,max=m.d)*D1 else m.d*D1)
+    dP1     <- e.a*f.a*A1*P1 + e.d*f.d*D1*P1 +
+                  (if(stochastic) disp.P*(P1+P2) else disp.P*(P1-P2)) -
+                  (if(stochastic) runif(1,max=m.p)*P1 else m.p*P1)
     dR2     <- Q2 + a2*sin(w2*i) - c*R2*A2 - l2*R2
-    dA2     <- e.r*c*R2*A2*(1-A2*a.ii) - dorm2*A2 + react2*D2 - f.a*A2*P2 - runif(1,max=m.a)*A2 - disp.A*(A1+A2)
-    dD2     <- dorm2*A2 - react2*D2 - f.d*D2*P2 - runif(1,max=m.d)*D2 - disp.D*(D1+D2)
-    dP2     <- e.a*f.a*A2*P2 + e.d*f.d*D2*P2 - runif(1,max=m.p)*P2 - disp.P*(P1+P2)
+    dA2     <- e.r*c*R2*A2*(1-A2*a.ii) - dorm2*A2 + react2*D2 - f.a*A2*P2 -
+                  (if(stochastic) disp.A*(A1+A2) else disp.A*(A1-A2)) -
+                  (if(stochastic) runif(1,max=m.a)*A2 else m.a*A2)
+    dD2     <- dorm2*A2 - react2*D2 - f.d*D2*P2 -
+                  (if(stochastic) disp.D*(D1+D2) else disp.D*(D1-D2)) -
+                  (if(stochastic) runif(1,max=m.d)*D2 else m.d*D2)
+    dP2     <- e.a*f.a*A2*P2 + e.d*f.d*D2*P2 -
+                  (if(stochastic) disp.P*(P1+P2) else disp.P*(P1-P2)) -
+                  (if(stochastic) runif(1,max=m.p)*P2 else m.p*P2)
     
     in.matrix[i+1, 1] <- i
     in.matrix[i+1, 2] <- max(((A1 + dA1) > extinct.thresh)*(A1+dA1), 0)
@@ -118,8 +130,8 @@ colnames(time.dynamics) <- c("t", "A1", "D1", "P1", "R1",
 time.dynamics[1, ] <- c(1, A10, D10, P10, R10, A20, D20, P20, R20)
 
 # Run the model with and without dormancy
-out.dynamics.D <- PPdorm.energetic.patch(in.matrix = time.dynamics, timesteps = timesteps, dormancy = T)
-out.dynamics.NoD <- PPdorm.energetic.patch(in.matrix = time.dynamics, timesteps = timesteps, dormancy = F)
+out.dynamics.D <- PPdorm.energetic.patch(in.matrix = time.dynamics, timesteps = timesteps, dormancy = T, stochastic = F)
+out.dynamics.NoD <- PPdorm.energetic.patch(in.matrix = time.dynamics, timesteps = timesteps, dormancy = F, stochastic = F)
 
 
 # Plot the temporal dynamics
@@ -127,9 +139,10 @@ png("./figures/PPdorm_two-patch_Dynamics.png", width = 1200, height = 1000, res 
 par(mfcol = c(2,2))
 par(mar = c(2,5,3,1))
 
-dorm.plot <- plot(out.dynamics.D[,1], out.dynamics.D[,2], 
-                  ylim = c(0,max(out.dynamics.NoD[,2:9], out.dynamics.D[,2:9])),
-                  xlab = "", ylab = "", xaxt = "n", yaxt = "n", type = "l", lty = "solid", cex = 0.5)
+plot(out.dynamics.D[,1], out.dynamics.D[,2], 
+                  ylim = c(0,max(out.dynamics.NoD[,c(2:4,6:8)], out.dynamics.D[,c(2:4,6:8)])),
+                  xlab = "", ylab = "", xaxt = "n", yaxt = "n", type = "l", 
+                  col = "blue", lty = "solid", cex = 0.5)
 points(out.dynamics.D[,1], out.dynamics.D[,3],
        type = "l", col = "green", cex = 0.5)
 points(out.dynamics.D[,1], out.dynamics.D[,4],
@@ -143,9 +156,10 @@ mtext(side = 2, "Density\n(With Dormancy)", line = 2.5, cex = 1.2)
 mtext(side = 3, "Patch 1", line = 1, cex = 1.5)
 
 par(mar = c(5,5,0,1))
-no.dorm.plot <- plot(out.dynamics.NoD[,1], out.dynamics.NoD[,2], 
-                     ylim = c(0,max(out.dynamics.NoD[,2:9], out.dynamics.D[,2:9])),
-                     xlab = "", ylab = "", xaxt = "n", yaxt = "n", type = "l", lty = "solid", cex = 0.5)
+plot(out.dynamics.NoD[,1], out.dynamics.NoD[,2], 
+                     ylim = c(0,max(out.dynamics.NoD[,c(2:4,6:8)], out.dynamics.D[,c(2:4,6:8)])),
+                     xlab = "", ylab = "", xaxt = "n", yaxt = "n", type = "l",
+                     col = "blue", lty = "solid", cex = 0.5)
 points(out.dynamics.NoD[,1], out.dynamics.NoD[,3],
        type = "l", col = "green", cex = 0.5)
 points(out.dynamics.NoD[,1], out.dynamics.NoD[,4],
@@ -160,8 +174,9 @@ mtext(side = 1, "Timestep", line = 3, cex = 1.5)
 
 par(mar = c(2,1,3,5))
 dorm.plot <- plot(out.dynamics.D[,1], out.dynamics.D[,6], 
-                  ylim = c(0,max(out.dynamics.NoD[,2:9], out.dynamics.D[,2:9])),
-                  xlab = "", ylab = "", xaxt = "n", yaxt = "n", type = "l", lty = "solid", cex = 0.5)
+                  ylim = c(0,max(out.dynamics.NoD[,c(2:4,6:8)], out.dynamics.D[,c(2:4,6:8)])),
+                  xlab = "", ylab = "", xaxt = "n", yaxt = "n", type = "l", 
+                  col = "blue", lty = "solid", cex = 0.5)
 points(out.dynamics.D[,1], out.dynamics.D[,7],
        type = "l", col = "green", cex = 0.5)
 points(out.dynamics.D[,1], out.dynamics.D[,8],
@@ -175,8 +190,9 @@ mtext(side = 3, "Patch 2", line = 1, cex = 1.5)
 
 par(mar = c(5,1,0,5))
 no.dorm.plot <- plot(out.dynamics.NoD[,1], out.dynamics.NoD[,6], 
-                     ylim = c(0,max(out.dynamics.NoD[,2:9], out.dynamics.D[,2:9])),
-                     xlab = "", ylab = "", xaxt = "n", yaxt = "n", type = "l", lty = "solid", cex = 0.5)
+                     ylim = c(0,max(out.dynamics.NoD[,c(2:4,6:8)], out.dynamics.D[,c(2:4,6:8)])),
+                     xlab = "", ylab = "", xaxt = "n", yaxt = "n", type = "l",
+                     col = "blue", lty = "solid", cex = 0.5)
 points(out.dynamics.NoD[,1], out.dynamics.NoD[,7],
        type = "l", col = "green", cex = 0.5)
 points(out.dynamics.NoD[,1], out.dynamics.NoD[,8],

@@ -97,7 +97,8 @@ par(mfrow = c(2,1))
 par(mar = c(2,5,3,3))
 dorm.plot <- plot(out.dynamics.D[,1], out.dynamics.D[,2], 
                   ylim = c(0,max(out.dynamics.NoD[,2:4], out.dynamics.D[,2:4])),
-                  xlab = "", ylab = "", xaxt = "n", yaxt = "n", type = "l", lty = "solid", cex = 0.5)
+                  xlab = "", ylab = "", xaxt = "n", yaxt = "n", type = "l", 
+                  col = "blue", lty = "solid", cex = 0.5)
 
 points(out.dynamics.D[,1], out.dynamics.D[,3],
        type = "l", lty = "solid", cex = 0.5, col = "green")
@@ -114,13 +115,14 @@ mtext(side = 2, "Density\n(With Dormancy)", line = 2.5, cex = 1.2)
 
 legend("topright", c("Active", "Dormant", "Predators"),
        lty = c("solid", "solid", "solid"),
-       col = c("black", "green", "red"), cex = 1, bty = "n")
+       col = c("blue", "green", "red"), cex = 1, bty = "n")
 
 # Plot Without Dormancy
 par(mar = c(5,5,0,3))
 no.dorm.plot <- plot(out.dynamics.NoD[,1], out.dynamics.NoD[,2], 
                      ylim = c(0,max(out.dynamics.NoD[,2:4], out.dynamics.D[,2:4])),
-                     xlab = "", ylab = "", xaxt = "n", yaxt = "n", type = "l", lty = "solid", cex = 0.5)
+                     xlab = "", ylab = "", xaxt = "n", yaxt = "n", type = "l",
+                     col = "blue", lty = "solid", cex = 0.5)
 
 points(out.dynamics.NoD[,1], out.dynamics.NoD[,3],
        type = "l", lty = "solid", cex = 0.5, col = "green")
@@ -142,9 +144,9 @@ graphics.off()
 img <- png::readPNG("./figures/PPdorm_one-patch_Dynamics.png")
 grid.raster(img)
 
-mean(out.dynamics.D[500:timesteps,2])/sd(out.dynamics.D[500:timesteps,2])
-mean(out.dynamics.D[500:timesteps,4])/sd(out.dynamics.D[500:timesteps,4])
-mean(out.dynamics.NoD[500:timesteps,2])/sd(out.dynamics.NoD[500:timesteps,2])
-mean(out.dynamics.NoD[500:timesteps,4])/sd(out.dynamics.NoD[500:timesteps,4])
-
-
+# mean(out.dynamics.D[500:timesteps,2])/sd(out.dynamics.D[500:timesteps,2])
+# mean(out.dynamics.D[500:timesteps,4])/sd(out.dynamics.D[500:timesteps,4])
+# mean(out.dynamics.NoD[500:timesteps,2])/sd(out.dynamics.NoD[500:timesteps,2])
+# mean(out.dynamics.NoD[500:timesteps,4])/sd(out.dynamics.NoD[500:timesteps,4])
+# 
+# 
